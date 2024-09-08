@@ -81,7 +81,7 @@ function Products() {
   useAuthCheck();
 
   useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_products`)
+    fetch(`${process.env.REACT_APP_API_URL}/get_all_products`)
     .then( data => data.json())
     .then( data => {
       //setDeliveredOrders(data); 

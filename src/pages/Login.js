@@ -29,7 +29,7 @@ function Login() {
     }
     setLoading(true)
     
-    fetch(`${process.env.REACT_APP_API_URL}/login`,{
+    fetch(`${process.env.REACT_APP_API_URL}/admin_login`,{
       
       method:'POST',
       headers: {

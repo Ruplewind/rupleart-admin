@@ -56,7 +56,8 @@ function Modals() {
     setIsModalChangeOpen(false)
   }
 
-
+  const [firstName, setFirstName] = useState('');
+  const [secondName, setSecondName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confPassword, setConfPassword] = useState('');
@@ -107,7 +108,7 @@ function Modals() {
   },[confPassword])
 
   useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/users`,{
+    fetch(`${process.env.REACT_APP_API_URL}/admin_users`,{
       headers: {
         'Authorization':`Bearer ${token}`
       }
@@ -135,13 +136,13 @@ function Modals() {
   function handleSubmit(){
 
     if(same && passLength && email.length > 3 && master !== null){
-      fetch(`${process.env.REACT_APP_API_URL}/add_user`,{
+      fetch(`${process.env.REACT_APP_API_URL}/add_admin_user`,{
         method: 'POST',
         headers: {
           'Content-Type':'application/json',
           'Authorization':`Bearer ${token}`
         },
-        body: JSON.stringify({ email, password, master_password: master })
+        body: JSON.stringify({ email, password, master_password: master, first_name: firstName, second_name: secondName })
       })
       .then(data => {
         if(data.ok){
@@ -207,7 +208,7 @@ function Modals() {
   const [changeId, setChangeId] = useState(null);
 
   function handleChangePassword(master, new_pass, user_id){
-    fetch(`${process.env.REACT_APP_API_URL}/change_password`,{
+    fetch(`${process.env.REACT_APP_API_URL}/change_admin_password`,{
       method:'POST',
       headers: {
         'Content-Type':'application/json',
@@ -256,6 +257,18 @@ function Modals() {
         <ModalHeader>Add User</ModalHeader>
         { error ? <HelperText valid={false}>Unable to Submit Form Due To errors in the fields below</HelperText> : <div></div>  }
         <ModalBody>
+
+          <div className='flex gap-4'>
+              <Label>
+                <span>First name</span>
+                <Input className="mt-1" type="email" placeholder="Jane" onChange={e => setFirstName(e.target.value)} required/>
+              </Label>
+
+              <Label>
+                <span>Second Name</span>
+                <Input className="mt-1" type="email" placeholder="Doe" onChange={e => setSecondName(e.target.value)} required/>
+              </Label>
+          </div>
 
 
         <Label>
@@ -373,7 +386,7 @@ function Modals() {
         <Table>
           <TableHeader>
             <tr>
-              <TableCell>Email</TableCell>
+              <TableCell>User Info</TableCell>
               <TableCell>Change Password?</TableCell>
               <TableCell>Actions</TableCell>
             </tr>
@@ -393,8 +406,8 @@ function Modals() {
                 <TableCell>
                   <div className="flex items-center text-sm">
                     <div>
-                      <p className="font-semibold">{user.email}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{user.job}</p>
+                      <p className="font-semibold">{user.first_name} {user.second_name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
                     </div>
                   </div>
                 </TableCell>
