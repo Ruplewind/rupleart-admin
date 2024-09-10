@@ -30,7 +30,7 @@ import '../assets/css/ImagePopup.css';
 
 const response2 = response.concat([])
 
-function Products() {
+function MyProducts() {
   const [pageTable, setPageTable] = useState(1)
   const [page, setPage] = useState(1)
   const [data, setData] = useState([])
@@ -63,7 +63,11 @@ function Products() {
   useAuthCheck();
 
   useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_all_products`)
+    fetch(`${process.env.REACT_APP_API_URL}/my_products`,{
+      headers: {
+        'Authorization':`Bearer ${token}`
+      }
+    })
     .then( data => data.json())
     .then( data => {
       //setDeliveredOrders(data); 
@@ -287,7 +291,7 @@ function Products() {
 
   return (
     <>
-      <PageTitle>Products</PageTitle>
+      <PageTitle>My Products</PageTitle>
       <ToastContainer />
 
       <div className="flex mr-5 mb-5 justify-end">
@@ -551,7 +555,7 @@ function Products() {
             </Button>
           </div>
           <div className="block w-full sm:hidden">
-            <Button block size="large" onClick={handleSubmit}>
+            <Button block size="large" onClick={handleEdit}>
               Submit
             </Button>
           </div>
@@ -660,4 +664,4 @@ function Products() {
   )
 }
 
-export default Products
+export default MyProducts

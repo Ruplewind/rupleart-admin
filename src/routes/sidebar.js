@@ -12,9 +12,22 @@ const routes = [
     name: 'Dashboard', // name that appear in Sidebar
   },
   {
-    path: '/app/products',
     icon: 'FormsIcon',
     name: 'Products',
+    routes: [
+      {
+        path: '/app/my_products',
+        name: 'My Products',
+      },
+      {
+        path: '/app/approved_products',
+        name: 'Approved Products',
+      },
+      {
+        path: '/app/pending_products',
+        name: 'Products Pending Approval',
+      }
+    ]
   },
   // {
   //   path: '/app/videos',
