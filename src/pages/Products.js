@@ -26,19 +26,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
-// make a copy of the data, for the second table
+import '../assets/css/ImagePopup.css';
+
 const response2 = response.concat([])
 
 function Products() {
-  /**
-   * DISCLAIMER: This code could be badly improved, but for the sake of the example
-   * and readability, all the logic for both table are here.
-   * You would be better served by dividing each table in its own
-   * component, like Table(?) and TableWithActions(?) hiding the
-   * presentation details away from the page view.
-   */
-
-  // setup pages control for every table
   const [pageTable, setPageTable] = useState(1)
   const [page, setPage] = useState(1)
   const [data, setData] = useState([])
@@ -55,22 +47,12 @@ function Products() {
   function onPageChangeTable(p) {
     setPageTable(p)
   }
-  // on page change, load new sliced data
-  // here you would make another server request for new data
-  // useEffect(() => {
-    
-
-  // }, [pageTable])
   const [productName, setProductName] = useState(null);
   const [type, setType] = useState(null);
   const [price, setPrice] = useState(0);
-  const [xSmall, setXSmall] = useState(false);
-  const [small, setSmall] = useState(false);
-  const [medium, setMedium] = useState(false);
-  const [large, setLarge] = useState(false);
-  const [xlarge, setXLarge] = useState(false);
-  const [xxLarge, setxXLarge] = useState(false);
-  const [error, setError] = useState(false);
+  const [description, setDescription] = useState(null);
+  const [size, setSize] = useState(null);
+  const [error, setError] = useState(null);
 
   const [imageSrc, setImageSrc] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
@@ -100,17 +82,13 @@ function Products() {
 
   function closeModal() {
     setProductName(null);
-      setType(null);
-      setPrice(0);
-      setXSmall(null);
-      setSmall(null);
-      setMedium(null);
-      setLarge(null);
-      setXLarge(null);
-      setxXLarge(null);;
-      setImageUrl(null);
-      setImageSrc(null);
-    setIsModalOpen(false)
+    setType(null);
+    setPrice(0);
+    setDescription(null);
+    setSize(null);
+    setImageUrl(null);
+    setImageSrc(null);
+    setIsModalOpen(false);
   }
 
   const handleDrop = (e) => {
@@ -136,13 +114,6 @@ function Products() {
             })
             return
         }
-            
-        if(!xSmall && !small && !medium && xlarge && xxLarge ){
-            toast('Check At least one size',{
-                type:'error'
-            })
-            return
-        }
 
         const formData = new FormData();
 
@@ -150,12 +121,8 @@ function Products() {
         formData.append('type', type);
         formData.append('price', price);
         formData.append('image', imageSrc)
-        formData.append('xSmall', xSmall);
-        formData.append('small', small);
-        formData.append('medium', medium)
-        formData.append('large', large)
-        formData.append('xLarge', xlarge)
-        formData.append('xXLarge', xxLarge)
+        formData.append('description', description);
+        formData.append('size', size);
 
         fetch(`${process.env.REACT_APP_API_URL}/add_product`,{
             method: 'POST',
@@ -187,130 +154,20 @@ function Products() {
         })
     }
 
-    const handleDeleteItem = ( id ) => {
-        fetch(`${process.env.REACT_APP_API_URL}/del_product/${id}`,{
-            method: 'DELETE',
-            headers: {
-              'Authorization':`Bearer ${token}`
-            }
-        })
-        .then((response)=>{
-            if(response.ok){
-                toast('Success',{
-                    type:'success'
-                })
-                setChange(!change)
-            }else{
-                toast('Server Error',{
-                    type:'error'
-                })
-            }
-        })
-        .catch((err)=>{
-            toast('Server Error',{
-                type:'error'
-            })
-        })
-    }
-
-    const handleAvailabilityToggle = (id, value) => {
-        fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`,{
-            method: 'POST',
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':`Bearer ${token}`
-            },
-            body: JSON.stringify({
-                value: value
-            })
-        })
-        .then((response)=>{
-            if(response.ok){
-                toast('Status Updated',{
-                    type:'success'
-                })
-                setChange(!change);
-            }else{
-                toast('Server Error',{
-                    type:'error'
-                })
-            }
-        })
-        .catch((err)=>{
-            toast('Server Error',{
-                type:'error'
-            })
-        })
-    }
-
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [editId, setEditId] = useState(null);
-
-    function openEditModal() {
-      setIsEditModalOpen(true)
-    }
-
-    function closeEditModal(){
-      setProductName(null);
-      setType(null);
-      setPrice(0);
-      setXSmall(null);
-      setSmall(null);
-      setMedium(null);
-      setLarge(null);
-      setXLarge(null);
-      setxXLarge(null);;
-      setImageUrl(null);
-      setImageSrc(null);
-      setIsEditModalOpen(false);
-    }
-
-    const handleEdit = () =>{
-      if(productName == null || price < 1 || imageSrc == null || type == null){
-          toast('All fields must be filled',{
-              type:'error'
-          })
-          return
-      }
-          
-      if(!xSmall && !small && !medium && xlarge && xxLarge ){
-          toast('Check At least one size',{
-              type:'error'
-          })
-          return
-      }
-
-      const formData = new FormData();
-
-      formData.append('productName', productName);
-      formData.append('type', type);
-      formData.append('price', price);
-      formData.append('image', imageSrc)
-      formData.append('xSmall', xSmall);
-      formData.append('small', small);
-      formData.append('medium', medium)
-      formData.append('large', large)
-      formData.append('xLarge', xlarge)
-      formData.append('xXLarge', xxLarge)
-
-      fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`,{
-          method: 'PUT',
+  const handleDeleteItem = ( id ) => {
+      fetch(`${process.env.REACT_APP_API_URL}/del_product/${id}`,{
+          method: 'DELETE',
           headers: {
             'Authorization':`Bearer ${token}`
-          },
-          body: formData
+          }
       })
       .then((response)=>{
           if(response.ok){
-              closeEditModal();
               toast('Success',{
                   type:'success'
               })
-              setChange(true);
+              setChange(!change)
           }else{
-            response.json().then( err => {
-              console.log(err)
-              })
               toast('Server Error',{
                   type:'error'
               })
@@ -321,8 +178,112 @@ function Products() {
               type:'error'
           })
       })
+  }
+
+  const handleAvailabilityToggle = (id, value) => {
+      fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`,{
+          method: 'POST',
+          headers:{
+              'Content-Type':'application/json',
+              'Authorization':`Bearer ${token}`
+          },
+          body: JSON.stringify({
+              value: value
+          })
+      })
+      .then((response)=>{
+          if(response.ok){
+              toast('Status Updated',{
+                  type:'success'
+              })
+              setChange(!change);
+          }else{
+              toast('Server Error',{
+                  type:'error'
+              })
+          }
+      })
+      .catch((err)=>{
+          toast('Server Error',{
+              type:'error'
+          })
+      })
+  }
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  function openEditModal() {
+    setIsEditModalOpen(true)
+  }
+
+  function closeEditModal(){
+    setProductName(null);
+    setType(null);
+    setPrice(0);
+    setDescription(null);
+    setSize(null);
+    setImageUrl(null);
+    setImageSrc(null);
+    setIsEditModalOpen(false);
+  }
+
+  const handleEdit = () =>{
+    if(productName == null || price < 1 || imageSrc == null || type == null){
+        toast('All fields must be filled',{
+            type:'error'
+        })
+        return
     }
 
+    const formData = new FormData();
+
+    formData.append('productName', productName);
+    formData.append('type', type);
+    formData.append('price', price);
+    formData.append('image', imageSrc)
+    formData.append('description', description);
+    formData.append('size', size);
+
+    fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`,{
+        method: 'PUT',
+        headers: {
+          'Authorization':`Bearer ${token}`
+        },
+        body: formData
+    })
+    .then((response)=>{
+        if(response.ok){
+            closeEditModal();
+            toast('Success',{
+                type:'success'
+            })
+            setChange(true);
+        }else{
+          response.json().then( err => {
+            console.log(err)
+            })
+            toast('Server Error',{
+                type:'error'
+            })
+        }
+    })
+    .catch((err)=>{
+        toast('Server Error',{
+            type:'error'
+        })
+    })
+  }
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleImageClick = () => {
+      setIsOpen(true);
+  };
+
+  const handleClose = () => {
+      setIsOpen(false);
+  };
 
   return (
     <>
@@ -418,89 +379,28 @@ function Products() {
           <span>Product Type</span>
           <Select className="mt-1" onChange={e => setType(e.target.value)}>
             <option value={null}></option>
-            <option value="tshirt">Tshirt</option>
-            <option value="hoodie">Hoodie</option>
+            <option value="painting">Painting</option>
+            <option value="sculpture">Sculpture</option>
           </Select>
         </Label>
         <Label className="mt-2">
           <span>Product Name</span>
-          <Input className="mt-1" type="email" placeholder="Product name" onChange={e => setProductName(e.target.value)} required/>
+          <Input className="mt-1" type="text" placeholder="Product name" onChange={e => setProductName(e.target.value)} required/>
+        </Label>
+
+        <Label className="mt-2">
+          <span>Description</span>
+          <Textarea className="mt-1" rows="3" placeholder="Enter some description" onChange={e => setDescription(e.target.value)} required />
+        </Label>
+
+        <Label className="mt-2">
+          <span>Size</span>
+          <Input className="mt-1" type="text" placeholder="50 X 40" onChange={e => setSize(e.target.value)} required/>
         </Label>
 
         <Label className="mt-2">
           <span>Price</span>
           <Input className="mt-1" type="number" placeholder="0" onChange={e => setPrice(e.target.value)} required/>
-        </Label>
-
-        <Label className="mt-2">
-          <span>Available Sizes:</span>
-          <br />
-          <div className="flex gap-4">
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xSmall}
-            onChange={(e)=> setXSmall(e.target.checked)}
-             />
-            <span className="ml-1">
-                XS
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={small}
-            onChange={(e)=> setSmall(e.target.checked)}
-             />
-            <span className="ml-1">
-                SM
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={medium}
-            onChange={(e)=> setMedium(e.target.checked)}
-             />
-            <span className="ml-1">
-                M
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black" 
-            checked={large}
-            onChange={(e)=> setLarge(e.target.checked)}
-            />
-            <span className="ml-1">
-                L
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xlarge}
-            onChange={(e)=> setXLarge(e.target.checked)} />
-            <span className="ml-1">
-                XL
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xxLarge}
-            onChange={(e)=> setxXLarge(e.target.checked)}
-            />
-            <span className="ml-1">
-                2XL
-            </span>
-          </div>
-          </div>
         </Label>
 
         </ModalBody>
@@ -611,8 +511,8 @@ function Products() {
           <span>Product Type</span>
           <Select className="mt-1" onChange={e => setType(e.target.value)}>
             <option className='capitalize' value={type}>{type}</option>
-            <option value="tshirt">Tshirt</option>
-            <option value="hoodie">Hoodie</option>
+            <option value="painting">Painting</option>
+            <option value="sculpture">Sculpture</option>
           </Select>
         </Label>
         <Label className="mt-2">
@@ -621,79 +521,18 @@ function Products() {
         </Label>
 
         <Label className="mt-2">
-          <span>Price</span>
-          <Input className="mt-1" type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} required/>
+          <span>Description</span>
+          <Textarea className="mt-1" rows="3" placeholder="Enter some description" value={description} onChange={e => setDescription(e.target.value)} required />
         </Label>
 
         <Label className="mt-2">
-          <span>Available Sizes:</span>
-          <br />
-          <div className="flex gap-4">
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xSmall}
-            onChange={(e)=> setXSmall(e.target.checked)}
-             />
-            <span className="ml-1">
-                XS
-            </span>
-          </div>
+          <span>Size</span>
+          <Input className="mt-1" type="text" placeholder="description" value={size} onChange={e => setSize(e.target.value)} required/>
+        </Label>
 
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={small}
-            onChange={(e)=> setSmall(e.target.checked)}
-             />
-            <span className="ml-1">
-                SM
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={medium}
-            onChange={(e)=> setMedium(e.target.checked)}
-             />
-            <span className="ml-1">
-                M
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black" 
-            checked={large}
-            onChange={(e)=> setLarge(e.target.checked)}
-            />
-            <span className="ml-1">
-                L
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xlarge}
-            onChange={(e)=> setXLarge(e.target.checked)} />
-            <span className="ml-1">
-                XL
-            </span>
-          </div>
-
-          <div className='flex items-center'>
-            <Input type="checkbox" 
-            className="border border-black"
-            checked={xxLarge}
-            onChange={(e)=> setxXLarge(e.target.checked)}
-            />
-            <span className="ml-1">
-                2XL
-            </span>
-          </div>
-          </div>
+        <Label className="mt-2">
+          <span>Price</span>
+          <Input className="mt-1" type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} required/>
         </Label>
 
         </ModalBody>
@@ -723,12 +562,12 @@ function Products() {
         <Table>
           <TableHeader>
             <tr>
-                <TableCell>Image</TableCell>
-              <TableCell>Product Type</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Available Sizes</TableCell>
+              <TableCell>Image</TableCell>
+              <TableCell>Name & Type</TableCell>
+              <TableCell>Size</TableCell>
+              <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>
+              <TableCell>Price</TableCell>
               <TableCell>Edit</TableCell>
               <TableCell>Delete</TableCell>
             </tr>
@@ -743,47 +582,48 @@ function Products() {
             data.map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                    <img src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`} class="p-0 rounded-t-lg h-40 w-40 object-contain"  alt="No image Uploaded"  />
-                </TableCell>
-                <TableCell>
-                    <span className="text-sm capitalize">{dt.type}</span>
+                    <img
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                        className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
+                        alt="No image Uploaded"
+                        onClick={handleImageClick}
+                    />
+
+                    {isOpen && (
+                        <div className="modal-overlay" onClick={handleClose}>
+                            <div className="modal-content">
+                                <button className="close-button" onClick={handleClose}>X</button>
+                                <img
+                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                                    className="modal-image"
+                                    alt="No image Uploaded"
+                                />
+                            </div>
+                        </div>
+                    )}
                 </TableCell>
                 <TableCell>
                     <span className="text-sm">{dt.productName}</span>
+                    <br />
+                    <span className="text-xs capitalize">{dt.type}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">Ksh. {dt.price}</span>
+                  <span className="text-sm">{dt.size}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs flex gap-2">
-                    { 
-                        dt.xSmall && <i>XS</i>
-                    }
-                    {
-                        dt.small && <i>SM</i>
-                    }
-                    {
-                        dt.medium && <i>M</i>
-                    }
-                    {
-                        dt.large && <i>L</i>
-                    }
-                    {
-                        dt.xLarge && <i>XL</i>
-                    }
-                    {
-                        dt.xXLarge && <i>2XL</i>
-                    }
-                  </span>
+                  <span className="text-xs capitalize">{dt.description}</span>
                 </TableCell>
                 <TableCell>
-                <div className='flex justify-center'>
-                    <Input type="checkbox" 
-                    className="border border-black"
-                    checked={dt.availability}
-                    onChange={(e)=> handleAvailabilityToggle( dt._id ,e.target.checked)}
-                    />
-                </div>
+                  <div className='flex justify-center'>
+                      <Input type="checkbox" 
+                      className="border border-black"
+                      checked={dt.availability}
+                      onChange={(e)=> handleAvailabilityToggle( dt._id ,e.target.checked)}
+                      />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs capitalize">Ksh. {dt.price}</span>
                 </TableCell>
                 <TableCell>
                     <button 
@@ -793,12 +633,8 @@ function Products() {
                       setProductName(dt.productName);
                       setType(dt.type);
                       setPrice(dt.price);
-                      setXSmall(dt.xSmall);
-                      setSmall(dt.small);
-                      setMedium(dt.medium);
-                      setLarge(dt.large);
-                      setXLarge(dt.xLarge);
-                      setxXLarge(dt.xXLarge);;
+                      setDescription(dt.description);
+                      setSize(dt.size);
                       setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`);
                       setImageSrc(dt.image);
                       openEditModal();
@@ -820,9 +656,6 @@ function Products() {
         <TableFooter>
         </TableFooter>
       </TableContainer>
-
-
-
     </>
   )
 }
