@@ -162,7 +162,7 @@ function DeliveryLocations() {
         if(search === '' || search === null){
             return item;
         }else if(
-            item.town.toLowerCase().includes(search.toLowerCase())
+            item.name.toLowerCase().includes(search.toLowerCase())
         ){
             return item;
         }
@@ -201,7 +201,7 @@ function DeliveryLocations() {
             filteredData.map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <span className="text-sm">{dt.town}</span>
+                  <span className="text-sm">{dt.name}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">Ksh. { dt.price }</span>
@@ -211,7 +211,7 @@ function DeliveryLocations() {
                         <button onClick={e => {
                             e.preventDefault();
                             setEditId(dt._id);
-                            setTown(dt.town);
+                            setTown(dt.name);
                             setPrice(dt.price);
                             openEditModal();
                             //handle(dt._id);
