@@ -289,6 +289,21 @@ function MyProducts() {
       setIsOpen(false);
   };
 
+  const [categories, setCategories] = useState([]);
+
+  useEffect(()=>{
+    fetch(`${process.env.REACT_APP_API_URL}/get_categories`,{
+      headers: {
+        'Authorization':`Bearer ${token}`
+      }
+    })
+    .then( data => data.json())
+    .then( data => {
+      setCategories(data)
+    } )
+    .catch( err => { console.log(err) })
+  },[])
+
   return (
     <>
       <PageTitle>My Products</PageTitle>
@@ -380,13 +395,17 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-4">
-          <span>Product Type</span>
+          <span>Category</span>
           <Select className="mt-1" onChange={e => setType(e.target.value)}>
             <option value={null}></option>
-            <option value="painting">Painting</option>
-            <option value="sculpture">Sculpture</option>
+            {
+              categories.length > 0 && categories.map(category => 
+                  <option value={category.category}>{category.category}</option>
+              )
+            }
           </Select>
         </Label>
+        
         <Label className="mt-2">
           <span>Product Name</span>
           <Input className="mt-1" type="text" placeholder="Product name" onChange={e => setProductName(e.target.value)} required/>
@@ -512,11 +531,14 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-4">
-          <span>Product Type</span>
+          <span>Category</span>
           <Select className="mt-1" onChange={e => setType(e.target.value)}>
-            <option className='capitalize' value={type}>{type}</option>
-            <option value="painting">Painting</option>
-            <option value="sculpture">Sculpture</option>
+          <option className='capitalize' value={type}>{type}</option>
+            {
+              categories.length > 0 && categories.map(category => 
+                  <option value={category.category}>{category.category}</option>
+              )
+            }
           </Select>
         </Label>
         <Label className="mt-2">
@@ -567,7 +589,7 @@ function MyProducts() {
           <TableHeader>
             <tr>
               <TableCell>Image</TableCell>
-              <TableCell>Name & Type</TableCell>
+              <TableCell>Name & Category</TableCell>
               <TableCell>Size</TableCell>
               <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>

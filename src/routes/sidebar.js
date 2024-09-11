@@ -54,7 +54,12 @@ const routes = [
   //   icon: 'ButtonsIcon',
   //   name: 'Buttons',
   // },
-    {
+  {
+    path: '/app/categories',
+    icon: 'CategoryIcon',
+    name: 'Manage Categories',
+  },
+  {
     path: '/app/locations',
     icon: 'LocationIcon',
     name: 'Delivery Locations',

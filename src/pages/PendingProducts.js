@@ -140,7 +140,7 @@ function PendingProducts() {
           <TableHeader>
             <tr>
               <TableCell>Image</TableCell>
-              <TableCell>Name & Type</TableCell>
+              <TableCell>Name & Category</TableCell>
               <TableCell>Size</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Price</TableCell>

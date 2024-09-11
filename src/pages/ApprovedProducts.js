@@ -125,7 +125,7 @@ function ApprovedProducts() {
           <TableHeader>
             <tr>
               <TableCell>Image</TableCell>
-              <TableCell>Name & Type</TableCell>
+              <TableCell>Name & Category</TableCell>
               <TableCell>Size</TableCell>
               <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>
