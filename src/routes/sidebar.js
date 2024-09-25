@@ -60,6 +60,11 @@ const routes = [
     name: 'Manage Categories',
   },
   {
+    path: '/app/events',
+    icon: 'EventIcon',
+    name: 'Events',
+  },
+  {
     path: '/app/locations',
     icon: 'LocationIcon',
     name: 'Delivery Locations',

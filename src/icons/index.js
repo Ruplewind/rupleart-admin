@@ -35,6 +35,7 @@ import { ReactComponent as PersonIcon } from './person.svg'
 import { ReactComponent as PlayIcon } from './play.svg'
 import { ReactComponent as LocationIcon } from './location.svg'
 import { ReactComponent as CategoryIcon } from './category.svg'
+import { ReactComponent as EventIcon } from './event.svg'
 
 export {
   ButtonsIcon,
@@ -73,5 +74,6 @@ export {
   PersonIcon,
   PlayIcon,
   LocationIcon,
-  CategoryIcon
+  CategoryIcon,
+  EventIcon
 }

@@ -15,6 +15,7 @@ const PendingOrders = lazy(() => import('../pages/PendingOrders'))
 const Videos = lazy(() => import('../pages/Videos'))
 const DeliveryLocations = lazy(() => import('../pages/DeliveryLocations'))
 const ManageCategories = lazy(() => import('../pages/ManageCategories'))
+const Events = lazy(() => import('../pages/Events'))
 const Page404 = lazy(() => import('../pages/404'))
 const Blank = lazy(() => import('../pages/Blank'))
 
@@ -83,6 +84,10 @@ const routes = [
   {
     path: '/videos',
     component: Videos
+  },
+  {
+    path: '/events',
+    component: Events
   },
   {
     path: '/404',
