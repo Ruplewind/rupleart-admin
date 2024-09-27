@@ -85,6 +85,11 @@ const routes = [
     ],
   },
   {
+    path: '/app/messages',
+    icon: 'MessageIcon',
+    name: 'Read Messages',
+  },
+  {
     path: '/app/modals',
     icon: 'PeopleIcon',
     name: 'Manage Users',

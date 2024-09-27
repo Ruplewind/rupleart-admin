@@ -13,6 +13,7 @@ const Modals = lazy(() => import('../pages/Modals'))
 const DeliveredOrders = lazy(() => import('../pages/DeliveredOrders'))
 const PendingOrders = lazy(() => import('../pages/PendingOrders'))
 const Videos = lazy(() => import('../pages/Videos'))
+const Messages = lazy(() => import('../pages/Messages'))
 const DeliveryLocations = lazy(() => import('../pages/DeliveryLocations'))
 const ManageCategories = lazy(() => import('../pages/ManageCategories'))
 const Events = lazy(() => import('../pages/Events'))
@@ -88,6 +89,10 @@ const routes = [
   {
     path: '/events',
     component: Events
+  },
+  {
+    path: '/messages',
+    component: Messages
   },
   {
     path: '/404',

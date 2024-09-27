@@ -36,6 +36,7 @@ import { ReactComponent as PlayIcon } from './play.svg'
 import { ReactComponent as LocationIcon } from './location.svg'
 import { ReactComponent as CategoryIcon } from './category.svg'
 import { ReactComponent as EventIcon } from './event.svg'
+import { ReactComponent as MessageIcon } from './message.svg'
 
 export {
   ButtonsIcon,
@@ -75,5 +76,6 @@ export {
   PlayIcon,
   LocationIcon,
   CategoryIcon,
-  EventIcon
+  EventIcon,
+  MessageIcon
 }

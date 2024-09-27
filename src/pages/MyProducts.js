@@ -112,7 +112,7 @@ function MyProducts() {
 
   const handleSubmit = () => {
 
-        if(productName == null || price < 1 || imageSrc == null || type == null){
+        if(productName == null || price < 1 || imageSrc == null || type == null || size == null || description == null){
             toast('All fields must be filled',{
                 type:'error'
             })
