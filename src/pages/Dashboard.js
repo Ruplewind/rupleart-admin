@@ -61,46 +61,66 @@ function Dashboard() {
   // on page change, load new sliced data
   // here you would make another server request for new data
   useEffect(() => {
-    
-    
-    fetch(`${process.env.REACT_APP_API_URL}/GetAllOrders`,{
+    fetch(`${process.env.REACT_APP_API_URL}/GetAllOrders`, {
       method: 'GET',
       headers: {
-        'Authorization':`Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       }
     })
-    .then( data => data.json())
-    .then( data => { 
-        setAllOrders(data.length); 
-        data.map(dt => {
-          setTotal(ttl => ttl + dt.delivery_cost + Math.floor(dt.total_price) );
+    .then(data => data.json())
+    .then(data => {
+      setAllOrders(data.length); 
+
+      // Track the total in a local variable and update it at the end
+      let totalAmount = 0;
+
+      Promise.all(
+        data.map(order => {
+          totalAmount += order.delivery_cost + Math.floor(order.total_price); // accumulate total
+
+          // Return the promise from the inner fetch call
+          return fetch(`${process.env.REACT_APP_API_URL}/get_location/${order.deliveryLocation}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          .then(response => response.json())
+          .then(location => ({ ...order, deliveryLocation: location.town }));
         })
-        setData(data)
+      ).then(ordersWithData => {
+        setTotal(totalAmount); // Update total after all orders have been processed
+        console.log(ordersWithData); // Now this should log the correct ordersWithData array
+        setData(ordersWithData);
         setLoading(false);
-      } )
-    .catch( err => { console.log(err); setLoading(false); })
+      });
+    })
+    .catch(err => { 
+      console.log(err); 
+      setLoading(false); 
+    });
 
-    fetch(`${process.env.REACT_APP_API_URL}/GetPendingOrders`,{
+    fetch(`${process.env.REACT_APP_API_URL}/GetPendingOrders`, {
       method: 'GET',
       headers: {
-        'Authorization':`Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       }
     })
-    .then( data => data.json())
-    .then( data => { setPendingOrders(data.length) } )
-    .catch( err => { console.log(err) })
+    .then(data => data.json())
+    .then(data => { setPendingOrders(data.length) })
+    .catch(err => { console.log(err) });
 
-    fetch(`${process.env.REACT_APP_API_URL}/GetDeliveredOrders`,{
+    fetch(`${process.env.REACT_APP_API_URL}/GetDeliveredOrders`, {
       method: 'GET',
       headers: {
-        'Authorization':`Bearer ${token}`
+        'Authorization': `Bearer ${token}`
       }
     })
-    .then( data => data.json())
-    .then( data => { setDeliveredOrders(data.length); } )
-    .catch( err => { console.log(err) })
+    .then(data => data.json())
+    .then(data => { setDeliveredOrders(data.length); })
+    .catch(err => { console.log(err) });
 
-  }, [page])
+  }, [page]);
+
 
   return (
     <>
@@ -154,7 +174,7 @@ function Dashboard() {
               <TableCell>Items</TableCell>
               <TableCell>Delivery Location</TableCell>
               <TableCell>Order Cost</TableCell>
-              <TableCell>Amount Paid</TableCell>
+              {/* <TableCell>Amount Paid</TableCell> */}
               <TableCell>Delivery Status</TableCell>
               <TableCell>Order Date</TableCell>
               <TableCell>Delivery Date</TableCell>
@@ -178,8 +198,9 @@ function Dashboard() {
                   <div className="flex items-center text-sm">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User image" /> */}
                     <div>
-                      <p className="font-semibold">{order.email}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{order.phone_number}</p>
+                      <p className="font-semibold">{order.first_name} {order.second_name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{order.phoneNumber}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{order.email}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -198,7 +219,7 @@ function Dashboard() {
                 <TableCell>
                   <span className="text-sm">ksh. {order.total_price + order.delivery_cost}</span>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <span className="text-sm">
                     Ksh. 
                     { 
@@ -208,7 +229,7 @@ function Dashboard() {
                       <span>{Math.floor(order.total_price) +  order.delivery_cost}</span> 
                     }
                   </span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   {
                     order.delivery_status === "delivered" ? <Badge type="success">{order.delivery_status}</Badge> : <Badge type="warning">{order.delivery_status}</Badge>

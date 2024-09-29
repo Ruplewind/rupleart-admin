@@ -101,11 +101,10 @@ function Tables() {
             <tr>
               <TableCell>Client Details</TableCell>
               <TableCell>Items</TableCell>
-              <TableCell>Delivery Location</TableCell>
-              <TableCell>Delivery Cost</TableCell>
+              <TableCell>Delivery Location & Cost</TableCell>
               <TableCell>Items Cost</TableCell>
               <TableCell>Total Cost</TableCell>
-              <TableCell>Amount Paid</TableCell>
+              {/* <TableCell>Amount Paid</TableCell> */}
               <TableCell>Order Date</TableCell>
               <TableCell>Delivery Date</TableCell>
             </tr>
@@ -140,10 +139,8 @@ function Tables() {
                     </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-sm">{dt.deliveryLocation}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">Ksh. { dt.delivery_cost }</span>
+                  <div className="text-sm">{dt.deliveryLocation}</div>
+                  <div className="text-xs">Ksh. { dt.delivery_cost }</div>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">Ksh. {Math.floor(dt.total_price) }</span>
@@ -151,7 +148,7 @@ function Tables() {
                 <TableCell>
                   <span className="text-sm">Ksh. {Math.floor(dt.total_price) +  dt.delivery_cost}</span>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <span className="text-sm">
                     Ksh.
                     { 
@@ -161,7 +158,7 @@ function Tables() {
                       <span>{Math.floor(dt.total_price) +  dt.delivery_cost}</span> 
                     }
                   </span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <span className="text-sm">{ dt.order_date }</span>
                 </TableCell>

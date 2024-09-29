@@ -119,11 +119,10 @@ function PendingOrders() {
             <tr>
               <TableCell>Client Details</TableCell>
               <TableCell>Items</TableCell>
-              <TableCell>Delivery Location</TableCell>
-              <TableCell>Delivery Cost</TableCell>
+              <TableCell>Delivery Location & Cost</TableCell>
               <TableCell>Items Cost</TableCell>
               <TableCell>Total Cost</TableCell>
-              <TableCell>Amount Paid</TableCell>
+              {/* <TableCell>Amount Paid</TableCell> */}
               <TableCell>Order Date</TableCell>
               <TableCell>Actions</TableCell>
             </tr>
@@ -141,8 +140,8 @@ function PendingOrders() {
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
                     <div>
                       <p className="font-semibold">{dt.first_name} {dt.second_name}</p>
-                      <p className="text-sm">{dt.email}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.phone_number}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.phoneNumber}</p>
+                      <p className="text-xs">{dt.email}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -157,10 +156,8 @@ function PendingOrders() {
                     </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs">{dt.deliveryLocation}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs">Ksh. { dt.delivery_cost }</span>
+                  <div className="text-sm">{dt.deliveryLocation}</div>
+                  <div className="text-xs">Ksh. { dt.delivery_cost }</div>
                 </TableCell>
                 <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) }</span>
@@ -168,7 +165,7 @@ function PendingOrders() {
                 <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) +  dt.delivery_cost}</span>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <span className="text-sm">
                     Ksh.
                     { 
@@ -178,7 +175,7 @@ function PendingOrders() {
                       <span>{Math.floor(dt.total_price) +  dt.delivery_cost}</span> 
                     }
                   </span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <span className="text-xs">{ dt.order_date }</span>
                 </TableCell>
