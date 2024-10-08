@@ -132,7 +132,13 @@ function Tables() {
                     <div className="flex items-center text-sm">
                         <div>
                         {
-                          dt.items.map( item => <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity}</p>)
+                          dt.items.map( item => 
+                            <div className='mb-1 border-b p-2'>
+                              <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
+                            </div>
+                          )
                         }
                         
                         </div>
