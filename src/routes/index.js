@@ -16,6 +16,7 @@ const Videos = lazy(() => import('../pages/Videos'))
 const Messages = lazy(() => import('../pages/Messages'))
 const DeliveryLocations = lazy(() => import('../pages/DeliveryLocations'))
 const ManageCategories = lazy(() => import('../pages/ManageCategories'))
+const ManageRegularUsers = lazy(() => import('../pages/ManageRegularUsers'))
 const Events = lazy(() => import('../pages/Events'))
 const Page404 = lazy(() => import('../pages/404'))
 const Blank = lazy(() => import('../pages/Blank'))
@@ -54,6 +55,10 @@ const routes = [
   {
     path: '/modals',
     component: Modals,
+  },
+  {
+    path: '/manage_regular_users',
+    component: ManageRegularUsers,
   },
   {
     path: '/delivered_orders',

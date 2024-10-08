@@ -84,6 +84,12 @@ const routes = [
       }
     ],
   },
+  ,
+  {
+    path: '/app/manage_regular_users',
+    icon: 'NewPeopleIcon',
+    name: 'Manage Regular Users',
+  },
   {
     path: '/app/messages',
     icon: 'MessageIcon',
