@@ -204,6 +204,27 @@ function ManageRegularUsers() {
     })
   }
 
+  const [search, setSearch] = useState(null);
+
+    const filteredData = data.filter((item)=>{
+                    
+        if(search === '' || search === null){
+            return item;
+        }else if(
+            item.email.toLowerCase().includes(search.toLowerCase())
+        ){
+            return item;
+        }else if(
+          item.first_name.toLowerCase().includes(search.toLowerCase())
+        ){
+            return item;
+        }else if(
+          item.second_name.toLowerCase().includes(search.toLowerCase())
+        ){
+            return item;
+        }
+    })
+
   return (
     <>
       <ToastContainer />
@@ -278,6 +299,13 @@ function ManageRegularUsers() {
       </Modal>
 
         <div className='mt-2 mb-2 dark:text-gray-500 text-sm'>Total Users: {data.length}</div>
+        <div className="flex mr-5 mb-5 justify-end">
+              <input type="text" 
+                  placeholder='Search ...' 
+                  className='p-2 text-xs rounded-lg bg-transparent border border-gray-300 dark:border-gray-500 text-black dark:text-gray-500' 
+                  onChange={(e)=> e.target.value === "" ? setSearch(null) : setSearch(e.target.value)}
+              />
+            </div>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -297,7 +325,7 @@ function ManageRegularUsers() {
             {
               !loading && !error && data.length === 0 && <TableRow><TableCell><div>No records to show</div></TableCell></TableRow>
             }
-            {!loading && !error && data.reverse().map((user, i) => (
+            {!loading && !error && filteredData.map((user, i) => (
               <TableRow key={i}>
                 <TableCell>
                   <div className="flex items-center text-sm">
