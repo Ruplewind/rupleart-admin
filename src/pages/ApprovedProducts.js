@@ -115,6 +115,42 @@ function ApprovedProducts() {
       setIsOpen(false);
   };
 
+  const [dissapprovalReason, setDissapprovalReason] = useState(null);
+
+  const handleApproval = (item_id, approval_value) => {
+    fetch(`${process.env.REACT_APP_API_URL}/approve_product/${item_id}`,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        'Authorization':`Bearer ${token}`
+      },
+      body: JSON.stringify({
+        approval_value,
+        dissapprovalReason
+      })
+    })
+    .then((response)=>{
+      if(response.ok){
+          toast('Success',{
+              type:'success'
+          })
+          setChange(true);
+      }else{
+        response.json().then( err => {
+          console.log(err)
+          })
+          toast('Server Error',{
+              type:'error'
+          })
+      }
+  })
+  .catch((err)=>{
+      toast('Server Error',{
+          type:'error'
+      })
+  })
+  }
+
   return (
     <>
       <PageTitle>Approved Products</PageTitle>
@@ -130,6 +166,7 @@ function ApprovedProducts() {
               <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>
               <TableCell>Price</TableCell>
+              <TableCell>Actions</TableCell>
             </tr>
           </TableHeader>
           <TableBody>
@@ -184,6 +221,18 @@ function ApprovedProducts() {
                 </TableCell>
                 <TableCell>
                   <span className="text-xs capitalize">Ksh. {dt.price}</span>
+                </TableCell>
+                <TableCell>
+                  <div className='flex gap-2'>
+                      <button 
+                      onClick={ e=> {
+                        e.preventDefault();
+                        handleApproval(dt._id, 0);
+                      }} 
+                      className='text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white'>
+                        Recall Approval
+                      </button>        
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
