@@ -55,7 +55,7 @@ function DeliveryLocations() {
 
     const handleSubmit = () => {
         if(town == null || price < 50){
-            toast("All fields must be filled",{
+            toast("All fields must be filled and must price must be more than 50",{
                 type:'error'
               });
             return;
@@ -162,7 +162,7 @@ function DeliveryLocations() {
         if(search === '' || search === null){
             return item;
         }else if(
-            item.name.toLowerCase().includes(search.toLowerCase())
+            item.town.toLowerCase().includes(search.toLowerCase())
         ){
             return item;
         }
@@ -201,7 +201,7 @@ function DeliveryLocations() {
             filteredData.map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <span className="text-sm">{dt.name}</span>
+                  <span className="text-sm">{dt.town}</span>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">Ksh. { dt.price }</span>
@@ -211,7 +211,7 @@ function DeliveryLocations() {
                         <button onClick={e => {
                             e.preventDefault();
                             setEditId(dt._id);
-                            setTown(dt.name);
+                            setTown(dt.town);
                             setPrice(dt.price);
                             openEditModal();
                             //handle(dt._id);
