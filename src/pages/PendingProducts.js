@@ -158,7 +158,7 @@ function PendingProducts() {
               <TableRow key={i}>
                 <TableCell>
                     <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
                         onClick={handleImageClick}
@@ -169,7 +169,7 @@ function PendingProducts() {
                             <div className="modal-content">
                                 <button className="close-button" onClick={handleClose}>X</button>
                                 <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                                     className="modal-image"
                                     alt="No image Uploaded"
                                 />

@@ -27,6 +27,7 @@ import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
 import '../assets/css/ImagePopup.css';
+import ReadMoreText from '../components/ReadMoreText'
 
 const response2 = response.concat([])
 
@@ -68,6 +69,7 @@ function ApprovedProducts() {
     .then( data => {
       //setDeliveredOrders(data); 
       //setTotalResults(data.length);
+      console.log(data)
       setData(data)
       setLoading(false);
     } )
@@ -180,7 +182,7 @@ function ApprovedProducts() {
               <TableRow key={i}>
                 <TableCell>
                     <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0][0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
                         onClick={handleImageClick}
@@ -191,7 +193,7 @@ function ApprovedProducts() {
                             <div className="modal-content">
                                 <button className="close-button" onClick={handleClose}>X</button>
                                 <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0][0]}`}
                                     className="modal-image"
                                     alt="No image Uploaded"
                                 />
@@ -208,7 +210,8 @@ function ApprovedProducts() {
                   <span className="text-sm">{dt.size}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs capitalize">{dt.description}</span>
+                  <ReadMoreText description={dt.description} />
+                  {/* <span className="text-xs capitalize">{dt.description}</span> */}
                 </TableCell>
                 <TableCell>
                   <div className='flex justify-center'>

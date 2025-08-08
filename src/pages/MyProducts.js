@@ -27,6 +27,7 @@ import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
 import '../assets/css/ImagePopup.css';
+import ReadMoreText from '../components/ReadMoreText'
 
 const response2 = response.concat([])
 
@@ -609,7 +610,7 @@ function MyProducts() {
               <TableRow key={i}>
                 <TableCell>
                     <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
                         onClick={handleImageClick}
@@ -620,7 +621,7 @@ function MyProducts() {
                             <div className="modal-content">
                                 <button className="close-button" onClick={handleClose}>X</button>
                                 <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`}
+                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                                     className="modal-image"
                                     alt="No image Uploaded"
                                 />
@@ -637,7 +638,8 @@ function MyProducts() {
                   <span className="text-sm">{dt.size}</span>
                 </TableCell>
                 <TableCell>
-                  <span className="text-xs capitalize">{dt.description}</span>
+                  <ReadMoreText description={dt.description} />
+                  {/* <span className="text-xs capitalize">{dt.description}</span> */}
                 </TableCell>
                 <TableCell>
                   <div className='flex justify-center'>
@@ -661,8 +663,8 @@ function MyProducts() {
                       setPrice(dt.price);
                       setDescription(dt.description);
                       setSize(dt.size);
-                      setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image}`);
-                      setImageSrc(dt.image);
+                      setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`);
+                      setImageSrc(dt.image[0]);
                       openEditModal();
                     }} 
                     className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>
