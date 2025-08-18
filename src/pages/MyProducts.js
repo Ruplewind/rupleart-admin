@@ -247,8 +247,8 @@ function MyProducts() {
     setPrice(0);
     setDescription(null);
     setSize(null);
-    setImageUrl(null);
-    setImageSrc(null);
+    setImageUrl([]);
+    setImageSrc([]);
     setIsEditModalOpen(false);
   }
 
@@ -265,7 +265,9 @@ function MyProducts() {
     formData.append('productName', productName);
     formData.append('type', type);
     formData.append('price', price);
-    formData.append('image', imageSrc)
+    imageSrc.forEach((image, index) => {
+          formData.append(`image`, image);
+    });
     formData.append('description', description);
     formData.append('size', size);
 
@@ -488,75 +490,86 @@ function MyProducts() {
         <Label className="mt-2">
           <span>Product Image</span>
           <br />
-        <div
-            className="flex items-center justify-center w-full mt-1"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            >
-            {imageSrc ? (
-                <div className="h-40 w-full relative flex">
-                <button
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                    onClick={handleDelete}
-                >
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                    />
-                    </svg>
-                </button>
-                <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-contain rounded-lg"
-                />
+          <div
+              className="flex items-center justify-center w-full mt-1"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              >
+              {imageUrl.length > 0 ? (
+                <div className="flex flex-wrap">
+                  {imageUrl.map((url, index) => (
+                    <div key={index} className="h-40 w-40 relative m-1">
+                      <button
+                        className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                        onClick={(e) =>{ e.preventDefault(); handleDelete(index); } }
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                      <img
+                        src={url}
+                        alt="Preview"
+                        className="w-full h-full object-contain rounded-lg"
+                      />
+                    </div>
+                  ))}
                 </div>
-            ) : (
-                <label
-                htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
-                >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg
-                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 16"
-                    >
-                    <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                    />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or drag and
-                    drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
-                    </p>
-                </div>
-                <input
-                    id="dropzone-file"
-                    type="file"
-                    className="hidden"
-                    onChange={(e) =>{ setImageSrc(e.target.files[0]); setImageUrl(URL.createObjectURL(e.target.files[0]) )}}
-                />
-                </label>
-            )}
+              ) : (
+                  <label
+                  htmlFor="dropzone-file"
+                  className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
+                  >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg
+                      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 20 16"
+                      >
+                      <path
+                          stroke="currentColor"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                      />
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> or drag and
+                      drop
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      SVG, PNG, JPG or GIF (MAX. 800x400px)
+                      </p>
+                  </div>
+                  <input
+                      id="dropzone-file"
+                      type="file"
+                      className="hidden"
+                      name="images"
+                      multiple
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        setImageSrc([...imageSrc, ...files]);
+                        const urls = files.map(file => URL.createObjectURL(file));
+                        setImageUrl([...imageUrl, ...urls]);
+                      }}
+                  />
+                  </label>
+              )}
         </div>
 
         </Label>
@@ -693,8 +706,11 @@ function MyProducts() {
                       setPrice(dt.price);
                       setDescription(dt.description);
                       setSize(dt.size);
-                      setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`);
-                      setImageSrc(dt.image[0]);
+                      // setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`);
+                      // setImageSrc(dt.image[0]);
+                      setImageSrc(dt.image);
+                      const imageUrls = dt.image.map(image => `${process.env.REACT_APP_API_URL}/uploads/${image}`);
+                      setImageUrl(prevImageUrls => [...prevImageUrls, ...imageUrls]);
                       openEditModal();
                     }} 
                     className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>
