@@ -55,8 +55,8 @@ function MyProducts() {
   const [size, setSize] = useState(null);
   const [error, setError] = useState(null);
 
-  const [imageSrc, setImageSrc] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
+  const [imageSrc, setImageSrc] = useState([]);
+  const [imageUrl, setImageUrl] = useState([]);
 
 
   const [change, setChange] = useState(false);
@@ -91,29 +91,46 @@ function MyProducts() {
     setPrice(0);
     setDescription(null);
     setSize(null);
-    setImageUrl(null);
-    setImageSrc(null);
+    setImageUrl([]);
+    setImageSrc([]);
     setIsModalOpen(false);
   }
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const file = e.target.files[0];
-    setImageSrc(file);
-    setImageUrl(URL.createObjectURL(file));
+
+    // Access the files dropped
+    const files = Array.from(e.dataTransfer.files);
+
+    // Check if any files were dropped
+    if (files.length === 0) {
+        return; // Exit if no files are present
+    }
+
+    // Update the state to include the new files
+    setImageSrc((prevImages) => [...prevImages, ...files]);
+
+    // Create URLs for the dropped files and update the state
+    const newImageUrls = files.map((file) => URL.createObjectURL(file));
+    setImageUrl((prevUrls) => [...prevUrls, ...newImageUrls]);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
 
-  const handleDelete = () => {
-    setImageSrc(null);
+  const handleDelete = (index) => {
+      const updatedImageSrc = [...imageSrc];
+      const updatedImageUrl = [...imageUrl];
+      updatedImageSrc.splice(index, 1);
+      updatedImageUrl.splice(index, 1);
+      setImageSrc(updatedImageSrc);
+      setImageUrl(updatedImageUrl);
   };
 
   const handleSubmit = () => {
 
-        if(productName == null || price < 1 || imageSrc == null || type == null || size == null || description == null){
+        if(productName == null || price < 1 || imageSrc.length < 1 || type == null || size == null || description == null){
             toast('All fields must be filled',{
                 type:'error'
             })
@@ -125,7 +142,9 @@ function MyProducts() {
         formData.append('productName', productName);
         formData.append('type', type);
         formData.append('price', price);
-        formData.append('image', imageSrc)
+        imageSrc.forEach((image, index) => {
+            formData.append(`image`, image);
+        });
         formData.append('description', description);
         formData.append('size', size);
 
@@ -327,33 +346,37 @@ function MyProducts() {
             onDrop={handleDrop}
             onDragOver={handleDragOver}
             >
-            {imageSrc ? (
-                <div className="h-40 w-full relative flex">
-                <button
-                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                    onClick={handleDelete}
-                >
-                    <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            {imageUrl.length > 0 ? (
+              <div className="flex flex-wrap">
+                {imageUrl.map((url, index) => (
+                  <div key={index} className="h-40 w-40 relative m-1">
+                    <button
+                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
+                      onClick={(e) =>{ e.preventDefault(); handleDelete(index); }}
                     >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                    <img
+                      src={url}
+                      alt="Preview"
+                      className="w-full h-full object-contain rounded-lg"
                     />
-                    </svg>
-                </button>
-                <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-contain rounded-lg"
-                />
-                </div>
+                  </div>
+                ))}
+              </div>
             ) : (
                 <label
                 htmlFor="dropzone-file"
@@ -387,7 +410,14 @@ function MyProducts() {
                     id="dropzone-file"
                     type="file"
                     className="hidden"
-                    onChange={(e) =>{ setImageSrc(e.target.files[0]); setImageUrl(URL.createObjectURL(e.target.files[0]) )}}
+                    name="images"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setImageSrc([...imageSrc, ...files]);
+                      const urls = files.map(file => URL.createObjectURL(file));
+                      setImageUrl([...imageUrl, ...urls]);
+                    }}
                 />
                 </label>
             )}
