@@ -446,7 +446,7 @@ function MyProducts() {
 
         <Label className="mt-2">
           <span>Description</span>
-          <Textarea className="mt-1" rows="3" placeholder="Enter some description" onChange={e => setDescription(e.target.value)} required />
+          <Textarea className="mt-1" rows="2" placeholder="Enter some description" onChange={e => setDescription(e.target.value)} required />
         </Label>
 
         <Label className="mt-2">
@@ -592,7 +592,7 @@ function MyProducts() {
 
         <Label className="mt-2">
           <span>Description</span>
-          <Textarea className="mt-1" rows="3" placeholder="Enter some description" value={description} onChange={e => setDescription(e.target.value)} required />
+          <Textarea className="mt-1" rows="2" placeholder="Enter some description" value={description} onChange={e => setDescription(e.target.value)} required />
         </Label>
 
         <Label className="mt-2">
