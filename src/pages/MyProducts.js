@@ -349,9 +349,9 @@ function MyProducts() {
             onDragOver={handleDragOver}
             >
             {imageUrl.length > 0 ? (
-              <div className="flex flex-wrap">
+              <div className="flex flex-nowrap overflow-x-auto gap-2 p-1">
                 {imageUrl.map((url, index) => (
-                  <div key={index} className="h-40 w-40 relative m-1">
+                  <div key={index} className="h-40 w-40 relative flex-shrink-0">
                     <button
                       className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
                       onClick={(e) =>{ e.preventDefault(); handleDelete(index); }}
@@ -496,9 +496,9 @@ function MyProducts() {
               onDragOver={handleDragOver}
               >
               {imageUrl.length > 0 ? (
-                <div className="flex flex-wrap">
+                <div className="flex flex-nowrap overflow-x-auto gap-2 p-1">
                   {imageUrl.map((url, index) => (
-                    <div key={index} className="h-40 w-40 relative m-1">
+                    <div key={index} className="h-40 w-40 relative flex-shrink-0">
                       <button
                         className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
                         onClick={(e) =>{ e.preventDefault(); handleDelete(index); } }
