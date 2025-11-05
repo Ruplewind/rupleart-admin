@@ -171,7 +171,7 @@ function Dashboard() {
           <TableHeader>
             <tr>
               <TableCell>Client Details</TableCell>
-              <TableCell>Items</TableCell>
+              <TableCell>Items & Supplier Info</TableCell>
               <TableCell>Delivery Location</TableCell>
               <TableCell>Order Cost</TableCell>
               {/* <TableCell>Amount Paid</TableCell> */}
@@ -210,9 +210,19 @@ function Dashboard() {
                         {
                             order.items.map( item => 
                               <div className='mb-1 border-b p-2'>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
+                                <div className='flex gap-3 align-middle'>
+                                    <img
+                                        src={`${process.env.REACT_APP_API_URL}/uploads/${item.image[0]}`}
+                                        className="p-0 rounded-lg h-20 w-20 object-contain cursor-pointer"
+                                        alt="No image Uploaded"
+                                        // onClick={handleImageClick}
+                                    />
+                                    <div>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
+                                    </div>
+                                </div>
                             </div>
                               )
                         }

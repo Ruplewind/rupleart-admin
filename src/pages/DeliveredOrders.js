@@ -100,8 +100,8 @@ function Tables() {
           <TableHeader>
             <tr>
               <TableCell>Client Details</TableCell>
-              <TableCell>Items</TableCell>
-              <TableCell>Delivery Location & Cost</TableCell>
+              <TableCell>Items & Supplier Info</TableCell>
+              <TableCell>Delivery Location</TableCell>
               <TableCell>Items Cost</TableCell>
               <TableCell>Total Cost</TableCell>
               {/* <TableCell>Amount Paid</TableCell> */}
@@ -122,23 +122,33 @@ function Tables() {
                   <div className="flex items-center text-sm">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
                     <div>
-                      <p className="font-semibold">{dt.first_name} {dt.second_name}</p>
-                      <p className="text-sm">{dt.email}</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.phone_number}</p>
+                      <p className="font-semibold">{dt.client_first_name} {dt.client_second_name}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">{dt.client_phone_number}</p>
+                      <p className="text-sm">{dt.client_email}</p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                    <div className="flex items-center text-sm">
+                    <div className="flex items-center text-xs">
                         <div>
                         {
-                          dt.items.map( item => 
-                            <div className='mb-1 border-b p-2'>
-                              <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
-                              <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
+                            dt.items.map( item => 
+                              <div className='mb-1 border-b p-2'>
+                                <div className='flex gap-3 align-middle'>
+                                    <img
+                                        src={`${process.env.REACT_APP_API_URL}/uploads/${item.image[0]}`}
+                                        className="p-0 rounded-lg h-20 w-20 object-contain cursor-pointer"
+                                        alt="No image Uploaded"
+                                        // onClick={handleImageClick}
+                                    />
+                                    <div>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">{item.supplier_first_name} {item.supplier_second_name} - {item.supplier_phone_number}</p>
+                                      <p className="text-xs text-gray-600 dark:text-gray-400">{item.supplier_email }</p>
+                                    </div>
+                                </div>
                             </div>
-                          )
+                              )
                         }
                         
                         </div>
