@@ -673,6 +673,8 @@ function MyProducts() {
                     )}
                 </TableCell>
                 <TableCell>
+                    <span className="text-sm">#{dt.productId}</span>
+                    <br />
                     <span className="text-sm">{dt.productName}</span>
                     <br />
                     <span className="text-xs capitalize">{dt.type}</span>

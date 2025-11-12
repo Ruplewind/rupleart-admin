@@ -182,7 +182,7 @@ function ApprovedProducts() {
               <TableRow key={i}>
                 <TableCell>
                     <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0][0]}`}
+                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
                         onClick={handleImageClick}
@@ -202,6 +202,8 @@ function ApprovedProducts() {
                     )}
                 </TableCell>
                 <TableCell>
+                    <span className="text-sm">#{dt.productId}</span>
+                    <br />
                     <span className="text-sm">{dt.productName}</span>
                     <br />
                     <span className="text-xs capitalize">{dt.type}</span>
