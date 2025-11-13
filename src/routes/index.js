@@ -12,6 +12,7 @@ const Buttons = lazy(() => import('../pages/Buttons'))
 const Modals = lazy(() => import('../pages/Modals'))
 const DeliveredOrders = lazy(() => import('../pages/DeliveredOrders'))
 const PendingOrders = lazy(() => import('../pages/PendingOrders'))
+const TransitOrders = lazy(() => import('../pages/TransitOrders'))
 const Videos = lazy(() => import('../pages/Videos'))
 const Messages = lazy(() => import('../pages/Messages'))
 const DeliveryLocations = lazy(() => import('../pages/DeliveryLocations'))
@@ -67,6 +68,10 @@ const routes = [
   {
     path: '/pending_orders',
     component: PendingOrders,
+  },
+  {
+    path: '/transit_orders',
+    component: TransitOrders,
   },
   {
     path: '/approved_products',

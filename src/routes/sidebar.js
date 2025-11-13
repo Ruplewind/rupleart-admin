@@ -79,6 +79,10 @@ const routes = [
         name: 'Pending Orders',
       },
       {
+        path: '/app/transit_orders',
+        name: 'Orders In Transit',
+      },
+      {
         path: '/app/delivered_orders',
         name: 'Delivered Orders',
       }

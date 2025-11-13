@@ -22,7 +22,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
 
-function PendingOrders() {
+function TransitOrders() {
   /**
    * DISCLAIMER: This code could be badly improved, but for the sake of the example
    * and readability, all the logic for both table are here.
@@ -59,7 +59,7 @@ function PendingOrders() {
   useAuthCheck();
 
   useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/GetPendingOrders`,{
+    fetch(`${process.env.REACT_APP_API_URL}/GetTransitOrders`,{
       headers: {
         'Authorization':`Bearer ${token}`
       }
@@ -89,7 +89,7 @@ function PendingOrders() {
   },[data])
 
   const handleUpdate = (id) =>{
-    fetch(`${process.env.REACT_APP_API_URL}/update_transit/${id}`,{
+    fetch(`${process.env.REACT_APP_API_URL}/update_delivery/${id}`,{
       method: 'PUT',
       headers: {
         'Authorization':`Bearer ${token}`
@@ -113,7 +113,7 @@ function PendingOrders() {
   return (
     <>
     <ToastContainer />
-      <PageTitle>Pending Orders</PageTitle>
+      <PageTitle>Orders In Transit</PageTitle>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
@@ -198,7 +198,7 @@ function PendingOrders() {
                   <span className="text-xs">{ dt.order_date }</span>
                 </TableCell>
                 <TableCell>
-                  <Button layout="outline" onClick={()=> handleUpdate(dt._id)}>Mark As In Transit</Button>
+                  <Button layout="outline" onClick={()=> handleUpdate(dt._id)}>Mark As Delivered</Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -214,4 +214,4 @@ function PendingOrders() {
   )
 }
 
-export default PendingOrders
+export default TransitOrders
