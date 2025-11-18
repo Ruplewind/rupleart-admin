@@ -64,7 +64,7 @@ function ApprovedProducts() {
   useAuthCheck();
 
   useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_approved_products`)
+    fetch(`${process.env.REACT_APP_API_URL}/get_all_approved_products`)
     .then( data => data.json())
     .then( data => {
       //setDeliveredOrders(data); 
