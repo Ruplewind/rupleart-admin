@@ -121,8 +121,8 @@ function TransitOrders() {
               <TableCell>Client Details</TableCell>
               <TableCell>Items & Supplier Info</TableCell>
               <TableCell>Delivery Location</TableCell>
-              <TableCell>Items Cost</TableCell>
-              <TableCell>Total Cost</TableCell>
+              {/* <TableCell>Items Cost</TableCell> */}
+              <TableCell>Order Cost</TableCell>
               {/* <TableCell>Amount Paid</TableCell> */}
               <TableCell>Order Date</TableCell>
               <TableCell>Actions</TableCell>
@@ -177,9 +177,9 @@ function TransitOrders() {
                   <div className="text-sm">{dt.deliveryLocation}</div>
                   <div className="text-xs">Ksh. { dt.delivery_cost }</div>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) }</span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) +  dt.delivery_cost}</span>
                 </TableCell>

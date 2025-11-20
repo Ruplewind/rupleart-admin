@@ -121,8 +121,8 @@ function PendingOrders() {
               <TableCell>Client Details</TableCell>
               <TableCell>Items & Supplier Info</TableCell>
               <TableCell>Delivery Location</TableCell>
-              <TableCell>Items Cost</TableCell>
-              <TableCell>Total Cost</TableCell>
+              {/* <TableCell>Items Cost</TableCell> */}
+              <TableCell>Order Cost</TableCell>
               {/* <TableCell>Amount Paid</TableCell> */}
               <TableCell>Order Date</TableCell>
               <TableCell>Actions</TableCell>
@@ -137,12 +137,12 @@ function PendingOrders() {
             data.reverse().map((dt, i) => (
               <TableRow key={i}>
                 <TableCell>
-                  <div className="flex items-center text-sm">
+                  <div className="flex items-center">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
                     <div>
-                      <p className="font-semibold">{dt.client_first_name} {dt.client_second_name}</p>
+                      <p className="font-semibold text-xs">{dt.client_first_name} {dt.client_second_name}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">{dt.client_phone_number}</p>
-                      <p className="text-sm">{dt.client_email}</p>
+                      <p className="text-xs">{dt.client_email}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -177,9 +177,9 @@ function PendingOrders() {
                   <div className="text-sm">{dt.deliveryLocation}</div>
                   <div className="text-xs">Ksh. { dt.delivery_cost }</div>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) }</span>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) +  dt.delivery_cost}</span>
                 </TableCell>
