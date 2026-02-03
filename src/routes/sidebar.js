@@ -95,6 +95,11 @@ const routes = [
     name: 'Manage Regular Users',
   },
   {
+    path: '/app/referrals',
+    icon: 'CategoryIcon',
+    name: 'Refferals Counter',
+  },
+  {
     path: '/app/messages',
     icon: 'MessageIcon',
     name: 'Read Messages',

@@ -16,6 +16,7 @@ const TransitOrders = lazy(() => import('../pages/TransitOrders'))
 const Videos = lazy(() => import('../pages/Videos'))
 const Messages = lazy(() => import('../pages/Messages'))
 const DeliveryLocations = lazy(() => import('../pages/DeliveryLocations'))
+const Referrals = lazy(() => import('../pages/Referrals'))
 const ManageCategories = lazy(() => import('../pages/ManageCategories'))
 const ManageRegularUsers = lazy(() => import('../pages/ManageRegularUsers'))
 const Events = lazy(() => import('../pages/Events'))
@@ -103,6 +104,10 @@ const routes = [
   {
     path: '/messages',
     component: Messages
+  },
+  {
+    path: '/referrals',
+    component: Referrals
   },
   {
     path: '/404',

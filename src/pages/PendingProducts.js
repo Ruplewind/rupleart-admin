@@ -73,8 +73,10 @@ function PendingProducts() {
       setIsOpen(true);
   };
 
-  const handleClose = () => {
-      setIsOpen(false);
+  const handleClose = (e) => {
+      if (e.target.style.position === 'fixed') {
+          setIsOpen(false);
+      }
   };
 
   const [dissapprovalReason, setDissapprovalReason] = useState(null);
@@ -165,12 +167,58 @@ function PendingProducts() {
                     />
 
                     {isOpen && (
-                        <div className="modal-overlay" onClick={handleClose}>
-                            <div className="modal-content">
-                                <button className="close-button" onClick={handleClose}>X</button>
+                        <div 
+                            style={{
+                                position: 'fixed',
+                                top: 0,
+                                left: 0,
+                                width: '100vw',
+                                height: '100vh',
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                zIndex: 1000
+                            }}
+                            onClick={handleClose}
+                        >
+                            <div 
+                                style={{
+                                    position: 'relative',
+                                    maxWidth: '90vw',
+                                    maxHeight: '90vh',
+                                    background: 'white',
+                                    padding: '20px',
+                                    borderRadius: '8px'
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <button 
+                                    style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        background: 'red',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '50%',
+                                        width: '30px',
+                                        height: '30px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        zIndex: 1001
+                                    }}
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    X
+                                </button>
                                 <img
                                     src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                                    className="modal-image"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '80vh',
+                                        objectFit: 'contain'
+                                    }}
                                     alt="No image Uploaded"
                                 />
                             </div>
