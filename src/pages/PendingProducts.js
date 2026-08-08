@@ -30,6 +30,14 @@ import '../assets/css/ImagePopup.css';
 
 const response2 = response.concat([])
 
+// optional: for rendering a little swatch next to each name
+const COLOR_SWATCHES = {
+  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
+  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
+  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
+  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
+};
+
 function PendingProducts() {
   const [pageTable, setPageTable] = useState(1)
   const [page, setPage] = useState(1)
@@ -144,6 +152,7 @@ function PendingProducts() {
               <TableCell>Image</TableCell>
               <TableCell>Name & Category</TableCell>
               <TableCell>Size</TableCell>
+              <TableCell>Colors</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Price</TableCell>
               <TableCell>Approve/Reject</TableCell>
@@ -234,6 +243,22 @@ function PendingProducts() {
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">{dt.size}</span>
+                </TableCell>
+                <TableCell>
+                  {dt.colors && dt.colors.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 max-w-[120px]">
+                      {dt.colors.map((color, idx) => (
+                        <span
+                          key={idx}
+                          title={color}
+                          className="w-4 h-4 rounded-full border border-gray-300 inline-block"
+                          style={{ backgroundColor: COLOR_SWATCHES[color] || '#ccc' }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <span className="text-xs capitalize">{dt.description}</span>

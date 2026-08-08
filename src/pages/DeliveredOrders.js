@@ -23,6 +23,13 @@ import useAuthCheck from '../utils/useAuthCheck'
 // make a copy of the data, for the second table
 const response2 = response.concat([])
 
+const COLOR_SWATCHES = {
+  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
+  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
+  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
+  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
+};
+
 function Tables() {
   /**
    * DISCLAIMER: This code could be badly improved, but for the sake of the example
@@ -144,6 +151,16 @@ function Tables() {
                                     <div>
                                       <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">#{item.productId}</p>
                                       <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
+                                      {item.color && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <span
+                                            title={item.color}
+                                            className="w-3 h-3 rounded-full border border-gray-300 inline-block cursor-default"
+                                            style={{ backgroundColor: COLOR_SWATCHES[item.color] || '#ccc' }}
+                                          />
+                                          <span className="text-xs text-gray-600 dark:text-gray-400">{item.color}</span>
+                                        </div>
+                                      )}
                                       <p className="text-xs text-gray-600 dark:text-gray-400">{item.supplier_first_name} {item.supplier_second_name} - {item.supplier_phone_number}</p>
                                       <p className="text-xs text-gray-600 dark:text-gray-400">{item.supplier_email }</p>
                                     </div>

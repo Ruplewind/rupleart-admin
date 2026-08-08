@@ -31,6 +31,13 @@ import SectionTitle from '../components/Typography/SectionTitle'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
 
+const COLOR_SWATCHES = {
+  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
+  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
+  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
+  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
+};
+
 function Dashboard() {
   const [page, setPage] = useState(1)
   const [data, setData] = useState([])
@@ -220,6 +227,16 @@ function Dashboard() {
                                     <div>
                                       <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">#{item.productId}</p>
                                       <p className="text-xs text-gray-600 dark:text-gray-400 capitalize">{item.type} - <b>{item.productName || item.title}</b> X {item.quantity} </p>
+                                      {item.color && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                          <span
+                                            title={item.color}
+                                            className="w-3 h-3 rounded-full border border-gray-300 inline-block cursor-default"
+                                            style={{ backgroundColor: COLOR_SWATCHES[item.color] || '#ccc' }}
+                                          />
+                                          <span className="text-xs text-gray-600 dark:text-gray-400">{item.color}</span>
+                                        </div>
+                                      )}
                                       <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_first_name} {item.owner_second_name} - {item.owner_phone_number}</p>
                                       <p className="text-xs text-gray-600 dark:text-gray-400">{item.owner_email }</p>
                                     </div>
