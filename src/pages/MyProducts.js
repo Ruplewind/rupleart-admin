@@ -30,6 +30,18 @@ import '../assets/css/ImagePopup.css';
 import ReadMoreText from '../components/ReadMoreText'
 
 const response2 = response.concat([])
+const AVAILABLE_COLORS = [
+  'Black', 'White', 'Grey', 'Red', 'Orange', 'Yellow',
+  'Green', 'Blue', 'Navy', 'Purple', 'Pink', 'Brown', 'Beige', 'Gold', 'Silver'
+];
+
+// optional: for rendering a little swatch next to each name
+const COLOR_SWATCHES = {
+  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
+  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
+  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
+  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
+};
 
 function MyProducts() {
   const [pageTable, setPageTable] = useState(1)
@@ -54,6 +66,16 @@ function MyProducts() {
   const [description, setDescription] = useState(null);
   const [size, setSize] = useState(null);
   const [error, setError] = useState(null);
+  const [colors, setColors] = useState([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const toggleColor = (color) => {
+      setColors(prev =>
+          prev.includes(color)
+              ? prev.filter(c => c !== color)
+              : [...prev, color]
+      );
+  }
 
   const [imageSrc, setImageSrc] = useState([]);
   const [imageUrl, setImageUrl] = useState([]);
@@ -61,6 +83,7 @@ function MyProducts() {
 
   const [change, setChange] = useState(false);
   const { token } = useContext(AuthContext);
+
   useAuthCheck();
 
   useEffect(()=>{
@@ -147,6 +170,9 @@ function MyProducts() {
         });
         formData.append('description', description);
         formData.append('size', size);
+        colors.forEach((color) => {
+            formData.append('colors', color);
+        });
 
         fetch(`${process.env.REACT_APP_API_URL}/add_product`,{
             method: 'POST',
@@ -247,6 +273,7 @@ function MyProducts() {
     setPrice(0);
     setDescription(null);
     setSize(null);
+    setColors([]);
     setImageUrl([]);
     setImageSrc([]);
     setIsEditModalOpen(false);
@@ -270,7 +297,10 @@ function MyProducts() {
     });
     formData.append('description', description);
     formData.append('size', size);
-
+    colors.forEach((color) => {
+        formData.append('colors', color);
+    });
+    
     fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`,{
         method: 'PUT',
         headers: {
@@ -452,6 +482,63 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-2">
+          <span>Colors</span>
+          <div className="relative mt-1">
+            <div
+              className="flex items-center justify-between w-full border rounded-lg px-3 py-2 cursor-pointer bg-white dark:bg-gray-700"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {colors.length > 0 ? `${colors.length} selected` : 'Select colors'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+
+            {dropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto border rounded-lg bg-white dark:bg-gray-700 shadow-lg">
+                {AVAILABLE_COLORS.map((color) => (
+                  <label
+                    key={color}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={colors.includes(color)}
+                      onChange={() => toggleColor(color)}
+                    />
+                    <span
+                      className="w-3 h-3 rounded-full border"
+                      style={{ backgroundColor: COLOR_SWATCHES[color] }}
+                    />
+                    <span className="text-sm">{color}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {colors.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {colors.map((color) => (
+                <div key={color} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border">
+                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: COLOR_SWATCHES[color] }} />
+                  <span className="text-xs">{color}</span>
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-red-500 ml-1"
+                    onClick={() => toggleColor(color)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Label>
+
+        <Label className="mt-2">
           <span>Size</span>
           <Input className="mt-1" type="text" placeholder="50 X 40" onChange={e => setSize(e.target.value)} required/>
         </Label>
@@ -603,6 +690,63 @@ function MyProducts() {
         </Label>
 
         <Label className="mt-2">
+          <span>Colors</span>
+          <div className="relative mt-1">
+            <div
+              className="flex items-center justify-between w-full border rounded-lg px-3 py-2 cursor-pointer bg-white dark:bg-gray-700"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+            >
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {colors.length > 0 ? `${colors.length} selected` : 'Select colors'}
+              </span>
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+
+            {dropdownOpen && (
+              <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto border rounded-lg bg-white dark:bg-gray-700 shadow-lg">
+                {AVAILABLE_COLORS.map((color) => (
+                  <label
+                    key={color}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={colors.includes(color)}
+                      onChange={() => toggleColor(color)}
+                    />
+                    <span
+                      className="w-3 h-3 rounded-full border"
+                      style={{ backgroundColor: COLOR_SWATCHES[color] }}
+                    />
+                    <span className="text-sm">{color}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {colors.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {colors.map((color) => (
+                <div key={color} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border">
+                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: COLOR_SWATCHES[color] }} />
+                  <span className="text-xs">{color}</span>
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-red-500 ml-1"
+                    onClick={() => toggleColor(color)}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Label>
+
+        <Label className="mt-2">
           <span>Price</span>
           <Input className="mt-1" type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} required/>
         </Label>
@@ -637,6 +781,7 @@ function MyProducts() {
               <TableCell>Image</TableCell>
               <TableCell>Name & Category</TableCell>
               <TableCell>Size</TableCell>
+              <TableCell>Colors</TableCell>
               <TableCell>Description</TableCell>
               <TableCell className="text-center">In Stock?</TableCell>
               <TableCell>Price</TableCell>
@@ -653,27 +798,6 @@ function MyProducts() {
             
             data.map((dt, i) => (
               <TableRow key={i}>
-                {/* <TableCell>
-                    <img
-                        src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                        className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
-                        alt="No image Uploaded"
-                        onClick={handleImageClick}
-                    />
-
-                    {isOpen && (
-                        <div className="modal-overlay" onClick={handleClose}>
-                            <div className="modal-content">
-                                <button className="close-button" onClick={handleClose}>X</button>
-                                <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                                    className="modal-image"
-                                    alt="No image Uploaded"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </TableCell> */}
                 <TableCell>
                     <img
                         src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
@@ -752,8 +876,23 @@ function MyProducts() {
                   <span className="text-sm">{dt.size}</span>
                 </TableCell>
                 <TableCell>
+                  {dt.colors && dt.colors.length > 0 ? (
+                    <div className="flex flex-wrap gap-1 max-w-[120px]">
+                      {dt.colors.map((color, idx) => (
+                        <span
+                          key={idx}
+                          title={color}
+                          className="w-4 h-4 rounded-full border border-gray-300 inline-block"
+                          style={{ backgroundColor: COLOR_SWATCHES[color] || '#ccc' }}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
+                </TableCell>
+                <TableCell>
                   <ReadMoreText description={dt.description} />
-                  {/* <span className="text-xs capitalize">{dt.description}</span> */}
                 </TableCell>
                 <TableCell>
                   <div className='flex justify-center'>
@@ -776,9 +915,8 @@ function MyProducts() {
                       setType(dt.type);
                       setPrice(dt.price);
                       setDescription(dt.description);
+                      setColors(dt.colors || []);
                       setSize(dt.size);
-                      // setImageUrl(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`);
-                      // setImageSrc(dt.image[0]);
                       setImageSrc(dt.image);
                       const imageUrls = dt.image.map(image => `${process.env.REACT_APP_API_URL}/uploads/${image}`);
                       setImageUrl(prevImageUrls => [...prevImageUrls, ...imageUrls]);
