@@ -1,362 +1,153 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import PageTitle from '../components/Typography/PageTitle'
-import SectionTitle from '../components/Typography/SectionTitle'
 import {
-  Table,
-  TableHeader,
-  TableCell,
-  TableBody,
-  TableRow,
-  TableFooter,
-  TableContainer,
-  Badge,
-  Avatar,
-  Button,
-  Pagination,
+  Table, TableHeader, TableCell, TableBody, TableRow,
+  TableFooter, TableContainer, Input, Button, Pagination,
 } from '@windmill/react-ui'
 
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '@windmill/react-ui'
-import { Input, HelperText, Label, Select, Textarea } from '@windmill/react-ui'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-import { EditIcon, TrashIcon } from '../icons'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
-import '../assets/css/ImagePopup.css';
+import '../assets/css/ImagePopup.css'
 import ReadMoreText from '../components/ReadMoreText'
 
-const response2 = response.concat([])
-const AVAILABLE_COLORS = [
-  'Black', 'White', 'Grey', 'Red', 'Orange', 'Yellow',
-  'Green', 'Blue', 'Navy', 'Purple', 'Pink', 'Brown', 'Beige', 'Gold', 'Silver'
-];
-
-// optional: for rendering a little swatch next to each name
-const COLOR_SWATCHES = {
-  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
-  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
-  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
-  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
-};
+import ColorDots from '../components/ColorDots'
+import ImagePreviewModal from '../components/ImagePreviewModal'
+import ProductSearchBar from '../components/ProductSearchBar'
+import DualScrollTable from '../components/DualScrollTable'
+import ProductFormModal from '../components/ProductFormModal'
+import useProductList from '../hooks/useProductList'
 
 function MyProducts() {
-  const [pageTable, setPageTable] = useState(1)
-  const [page, setPage] = useState(1)
-  const [data, setData] = useState([])
+  const { token } = useContext(AuthContext)
+  useAuthCheck()
 
-  // setup data for every table
-  const [loading, setLoading] = useState(true)
+  const {
+    data, loading, refresh, searchTerm, setSearchTerm,
+    category, setCategory, setPage, totalResults, resultsPerPage,
+  } = useProductList(`${process.env.REACT_APP_API_URL}/my_products`, token, 10)
 
-  // pagination setup
-  const resultsPerPage = 5
+  const [categories, setCategories] = useState([])
+  const [previewImage, setPreviewImage] = useState(null)
+  const [error, setError] = useState(null)
 
-  const [totalResults, setTotalResults] = useState(0);
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const [editInitialValues, setEditInitialValues] = useState(null)
 
-  // pagination change control
-  function onPageChangeTable(p) {
-    setPageTable(p)
-  }
-  const [productName, setProductName] = useState(null);
-  const [type, setType] = useState(null);
-  const [price, setPrice] = useState(0);
-  const [description, setDescription] = useState(null);
-  const [size, setSize] = useState(null);
-  const [error, setError] = useState(null);
-  const [colors, setColors] = useState([]);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const toggleColor = (color) => {
-      setColors(prev =>
-          prev.includes(color)
-              ? prev.filter(c => c !== color)
-              : [...prev, color]
-      );
-  }
-
-  const [imageSrc, setImageSrc] = useState([]);
-  const [imageUrl, setImageUrl] = useState([]);
-
-
-  const [change, setChange] = useState(false);
-  const { token } = useContext(AuthContext);
-
-  useAuthCheck();
-
-  useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/my_products`,{
-      headers: {
-        'Authorization':`Bearer ${token}`
-      }
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/get_categories`, {
+      headers: { Authorization: `Bearer ${token}` },
     })
-    .then( data => data.json())
-    .then( data => {
-      //setDeliveredOrders(data); 
-      //setTotalResults(data.length);
-      setData(data)
-      setLoading(false);
-    } )
-    .catch( err => { console.log(err) })
-  },[change])
+      .then((res) => res.json())
+      .then((cats) => setCategories(cats.map((c) => c.category)))
+      .catch((err) => console.log(err))
+  }, [token])
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  function openModal() {
-    setIsModalOpen(true)
+  const buildFormData = (form) => {
+    const formData = new FormData()
+    formData.append('productName', form.productName)
+    formData.append('type', form.type)
+    formData.append('price', form.price)
+    form.imageSrc.forEach((image) => formData.append('image', image))
+    formData.append('description', form.description)
+    formData.append('size', form.size)
+    form.colors.forEach((color) => formData.append('colors', color))
+    return formData
   }
 
-  function closeModal() {
-    setProductName(null);
-    setType(null);
-    setPrice(0);
-    setDescription(null);
-    setSize(null);
-    setImageUrl([]);
-    setImageSrc([]);
-    setIsModalOpen(false);
-  }
+  const isFormValid = (form) =>
+    form.productName && form.price >= 1 && form.imageSrc.length > 0 && form.type && form.size && form.description
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-
-    // Access the files dropped
-    const files = Array.from(e.dataTransfer.files);
-
-    // Check if any files were dropped
-    if (files.length === 0) {
-        return; // Exit if no files are present
+  const handleAdd = (form) => {
+    if (!isFormValid(form)) {
+      toast('All fields must be filled', { type: 'error' })
+      return
     }
-
-    // Update the state to include the new files
-    setImageSrc((prevImages) => [...prevImages, ...files]);
-
-    // Create URLs for the dropped files and update the state
-    const newImageUrls = files.map((file) => URL.createObjectURL(file));
-    setImageUrl((prevUrls) => [...prevUrls, ...newImageUrls]);
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-  };
-
-  const handleDelete = (index) => {
-      const updatedImageSrc = [...imageSrc];
-      const updatedImageUrl = [...imageUrl];
-      updatedImageSrc.splice(index, 1);
-      updatedImageUrl.splice(index, 1);
-      setImageSrc(updatedImageSrc);
-      setImageUrl(updatedImageUrl);
-  };
-
-  const handleSubmit = () => {
-
-        if(productName == null || price < 1 || imageSrc.length < 1 || type == null || size == null || description == null){
-            toast('All fields must be filled',{
-                type:'error'
-            })
-            return
+    fetch(`${process.env.REACT_APP_API_URL}/add_product`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: buildFormData(form),
+    })
+      .then((res) => {
+        if (res.ok) {
+          setIsAddOpen(false)
+          toast('Success', { type: 'success' })
+          refresh()
+        } else {
+          res.json().then((err) => console.log(err))
+          toast('Server Error', { type: 'error' })
         }
+      })
+      .catch(() => toast('Server Error', { type: 'error' }))
+  }
 
-        const formData = new FormData();
-
-        formData.append('productName', productName);
-        formData.append('type', type);
-        formData.append('price', price);
-        imageSrc.forEach((image, index) => {
-            formData.append(`image`, image);
-        });
-        formData.append('description', description);
-        formData.append('size', size);
-        colors.forEach((color) => {
-            formData.append('colors', color);
-        });
-
-        fetch(`${process.env.REACT_APP_API_URL}/add_product`,{
-            method: 'POST',
-            headers: {
-              'Authorization':`Bearer ${token}`
-            },
-            body: formData
-        })
-        .then((response)=>{
-            if(response.ok){
-                closeModal();
-                toast('Success',{
-                    type:'success'
-                })
-                setChange(true)
-            }else{
-              response.json().then( err => {
-                console.log(err)
-                })
-                toast('Server Error',{
-                    type:'error'
-                })
-            }
-        })
-        .catch((err)=>{
-            toast('Server Error',{
-                type:'error'
-            })
-        })
+  const handleEdit = (form) => {
+    if (!form.productName || form.price < 1 || !form.type) {
+      toast('All fields must be filled', { type: 'error' })
+      return
     }
+    fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body: buildFormData(form),
+    })
+      .then((res) => {
+        if (res.ok) {
+          setIsEditOpen(false)
+          toast('Success', { type: 'success' })
+          refresh()
+        } else {
+          res.json().then((err) => console.log(err))
+          toast('Server Error', { type: 'error' })
+        }
+      })
+      .catch(() => toast('Server Error', { type: 'error' }))
+  }
 
-  const handleDeleteItem = ( id ) => {
-      fetch(`${process.env.REACT_APP_API_URL}/del_product/${id}`,{
-          method: 'DELETE',
-          headers: {
-            'Authorization':`Bearer ${token}`
-          }
+  const handleDeleteItem = (id) => {
+    fetch(`${process.env.REACT_APP_API_URL}/del_product/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        toast(res.ok ? 'Success' : 'Server Error', { type: res.ok ? 'success' : 'error' })
+        if (res.ok) refresh()
       })
-      .then((response)=>{
-          if(response.ok){
-              toast('Success',{
-                  type:'success'
-              })
-              setChange(!change)
-          }else{
-              toast('Server Error',{
-                  type:'error'
-              })
-          }
-      })
-      .catch((err)=>{
-          toast('Server Error',{
-              type:'error'
-          })
-      })
+      .catch(() => toast('Server Error', { type: 'error' }))
   }
 
   const handleAvailabilityToggle = (id, value) => {
-      fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`,{
-          method: 'POST',
-          headers:{
-              'Content-Type':'application/json',
-              'Authorization':`Bearer ${token}`
-          },
-          body: JSON.stringify({
-              value: value
-          })
+    fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ value }),
+    })
+      .then((res) => {
+        toast(res.ok ? 'Status Updated' : 'Server Error', { type: res.ok ? 'success' : 'error' })
+        if (res.ok) refresh()
       })
-      .then((response)=>{
-          if(response.ok){
-              toast('Status Updated',{
-                  type:'success'
-              })
-              setChange(!change);
-          }else{
-              toast('Server Error',{
-                  type:'error'
-              })
-          }
-      })
-      .catch((err)=>{
-          toast('Server Error',{
-              type:'error'
-          })
-      })
+      .catch(() => toast('Server Error', { type: 'error' }))
   }
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-
-  function openEditModal() {
-    setIsEditModalOpen(true)
+  const openEditFor = (dt) => {
+    setEditId(dt._id)
+    setEditInitialValues({
+      productName: dt.productName,
+      type: dt.type,
+      price: dt.price,
+      description: dt.description,
+      size: dt.size,
+      colors: dt.colors || [],
+      imageSrc: dt.image,
+      imageUrl: dt.image.map((image) => `${process.env.REACT_APP_API_URL}/uploads/${image}`),
+    })
+    setIsEditOpen(true)
   }
-
-  function closeEditModal(){
-    setProductName(null);
-    setType(null);
-    setPrice(0);
-    setDescription(null);
-    setSize(null);
-    setColors([]);
-    setImageUrl([]);
-    setImageSrc([]);
-    setIsEditModalOpen(false);
-  }
-
-  const handleEdit = () =>{
-    if(productName == null || price < 1 || imageSrc == null || type == null){
-        toast('All fields must be filled',{
-            type:'error'
-        })
-        return
-    }
-
-    const formData = new FormData();
-
-    formData.append('productName', productName);
-    formData.append('type', type);
-    formData.append('price', price);
-    imageSrc.forEach((image, index) => {
-          formData.append(`image`, image);
-    });
-    formData.append('description', description);
-    formData.append('size', size);
-    colors.forEach((color) => {
-        formData.append('colors', color);
-    });
-    
-    fetch(`${process.env.REACT_APP_API_URL}/edit_product/${editId}`,{
-        method: 'PUT',
-        headers: {
-          'Authorization':`Bearer ${token}`
-        },
-        body: formData
-    })
-    .then((response)=>{
-        if(response.ok){
-            closeEditModal();
-            toast('Success',{
-                type:'success'
-            })
-            setChange(true);
-        }else{
-          response.json().then( err => {
-            console.log(err)
-            })
-            toast('Server Error',{
-                type:'error'
-            })
-        }
-    })
-    .catch((err)=>{
-        toast('Server Error',{
-            type:'error'
-        })
-    })
-  }
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleImageClick = () => {
-      setIsOpen(true);
-  };
-
-  const handleClose = (e) => {
-      if (e.target.style.position === 'fixed') {
-          setIsOpen(false);
-      }
-  };
-
-  const [categories, setCategories] = useState([]);
-
-  useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_categories`,{
-      headers: {
-        'Authorization':`Bearer ${token}`
-      }
-    })
-    .then( data => data.json())
-    .then( data => {
-      setCategories(data)
-    } )
-    .catch( err => { console.log(err) })
-  },[])
 
   return (
     <>
@@ -364,581 +155,123 @@ function MyProducts() {
       <ToastContainer />
 
       <div className="flex mr-5 mb-5 justify-end">
-        <Button onClick={openModal}>Add A Product</Button>
+        <Button onClick={() => setIsAddOpen(true)}>Add A Product</Button>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <ModalHeader>Add A Product</ModalHeader>
-        { error ? <HelperText valid={false}>Unable to Submit Form Due To errors in the fields below</HelperText> : <div></div>  }
-        <ModalBody>
+      <ProductSearchBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        category={category}
+        onCategoryChange={setCategory}
+        categories={categories}
+      />
 
-        <Label className="mt-2">
-          <span>Product Image</span>
-          <br />
-        <div
-            className="flex items-center justify-center w-full mt-1"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            >
-            {imageUrl.length > 0 ? (
-              <div className="flex flex-nowrap overflow-x-auto gap-2 p-1">
-                {imageUrl.map((url, index) => (
-                  <div key={index} className="h-40 w-40 relative flex-shrink-0">
-                    <button
-                      className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                      onClick={(e) =>{ e.preventDefault(); handleDelete(index); }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
-                    <img
-                      src={url}
-                      alt="Preview"
-                      className="w-full h-full object-contain rounded-lg"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-                <label
-                htmlFor="dropzone-file"
-                className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
-                >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <svg
-                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 16"
-                    >
-                    <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                    />
-                    </svg>
-                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Click to upload</span> or drag and
-                    drop
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                    SVG, PNG, JPG or GIF (MAX. 800x400px)
-                    </p>
-                </div>
-                <input
-                    id="dropzone-file"
-                    type="file"
-                    className="hidden"
-                    name="images"
-                    multiple
-                    onChange={(e) => {
-                      const files = Array.from(e.target.files);
-                      setImageSrc([...imageSrc, ...files]);
-                      const urls = files.map(file => URL.createObjectURL(file));
-                      setImageUrl([...imageUrl, ...urls]);
-                    }}
-                />
-                </label>
-            )}
-        </div>
+      <ProductFormModal
+        isOpen={isAddOpen}
+        mode="add"
+        initialValues={null}
+        categories={categories}
+        error={error}
+        onClose={() => setIsAddOpen(false)}
+        onSubmit={handleAdd}
+      />
 
-        </Label>
-
-        <Label className="mt-4">
-          <span>Category</span>
-          <Select className="mt-1" onChange={e => setType(e.target.value)}>
-            <option value={null}></option>
-            {
-              categories.length > 0 && categories.map(category => 
-                  <option value={category.category}>{category.category}</option>
-              )
-            }
-          </Select>
-        </Label>
-        
-        <Label className="mt-2">
-          <span>Product Name</span>
-          <Input className="mt-1" type="text" placeholder="Product name" onChange={e => setProductName(e.target.value)} required/>
-        </Label>
-
-        <Label className="mt-2">
-          <span>Description</span>
-          <Textarea className="mt-1" rows="2" placeholder="Enter some description" onChange={e => setDescription(e.target.value)} required />
-        </Label>
-
-        <Label className="mt-2">
-          <span>Colors</span>
-          <div className="relative mt-1">
-            <div
-              className="flex items-center justify-between w-full border rounded-lg px-3 py-2 cursor-pointer bg-white dark:bg-gray-700"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {colors.length > 0 ? `${colors.length} selected` : 'Select colors'}
-              </span>
-              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-
-            {dropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto border rounded-lg bg-white dark:bg-gray-700 shadow-lg">
-                {AVAILABLE_COLORS.map((color) => (
-                  <label
-                    key={color}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={colors.includes(color)}
-                      onChange={() => toggleColor(color)}
-                    />
-                    <span
-                      className="w-3 h-3 rounded-full border"
-                      style={{ backgroundColor: COLOR_SWATCHES[color] }}
-                    />
-                    <span className="text-sm">{color}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {colors.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {colors.map((color) => (
-                <div key={color} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border">
-                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: COLOR_SWATCHES[color] }} />
-                  <span className="text-xs">{color}</span>
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-red-500 ml-1"
-                    onClick={() => toggleColor(color)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </Label>
-
-        <Label className="mt-2">
-          <span>Size</span>
-          <Input className="mt-1" type="text" placeholder="50 X 40" onChange={e => setSize(e.target.value)} required/>
-        </Label>
-
-        <Label className="mt-2">
-          <span>Price</span>
-          <Input className="mt-1" type="number" placeholder="0" onChange={e => setPrice(e.target.value)} required/>
-        </Label>
-
-        </ModalBody>
-        <ModalFooter>
-          <div className="hidden sm:block">
-            <Button layout="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-          </div>
-          <div className="hidden sm:block" onClick={handleSubmit}>
-            <Button>Submit</Button>
-          </div>
-          <div className="block w-full sm:hidden">
-            <Button block size="large" layout="outline" onClick={closeModal}>
-              Cancel
-            </Button>
-          </div>
-          <div className="block w-full sm:hidden">
-            <Button block size="large" onClick={handleSubmit}>
-              Submit
-            </Button>
-          </div>
-        </ModalFooter>
-      </Modal>
-      
-      <Modal isOpen={isEditModalOpen} onClose={closeEditModal}>
-        <ModalHeader>Edit Product</ModalHeader>
-        { error ? <HelperText valid={false}>Unable to Submit Form Due To errors in the fields below</HelperText> : <div></div>  }
-        <ModalBody>
-
-        <Label className="mt-2">
-          <span>Product Image</span>
-          <br />
-          <div
-              className="flex items-center justify-center w-full mt-1"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              >
-              {imageUrl.length > 0 ? (
-                <div className="flex flex-nowrap overflow-x-auto gap-2 p-1">
-                  {imageUrl.map((url, index) => (
-                    <div key={index} className="h-40 w-40 relative flex-shrink-0">
-                      <button
-                        className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1"
-                        onClick={(e) =>{ e.preventDefault(); handleDelete(index); } }
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-4 h-4"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                      <img
-                        src={url}
-                        alt="Preview"
-                        className="w-full h-full object-contain rounded-lg"
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                  <label
-                  htmlFor="dropzone-file"
-                  className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 "
-                  >
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg
-                      className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 20 16"
-                      >
-                      <path
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                      />
-                      </svg>
-                      <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                      <span className="font-semibold">Click to upload</span> or drag and
-                      drop
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                      SVG, PNG, JPG or GIF (MAX. 800x400px)
-                      </p>
-                  </div>
-                  <input
-                      id="dropzone-file"
-                      type="file"
-                      className="hidden"
-                      name="images"
-                      multiple
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        setImageSrc([...imageSrc, ...files]);
-                        const urls = files.map(file => URL.createObjectURL(file));
-                        setImageUrl([...imageUrl, ...urls]);
-                      }}
-                  />
-                  </label>
-              )}
-        </div>
-
-        </Label>
-
-        <Label className="mt-4">
-          <span>Category</span>
-          <Select className="mt-1" onChange={e => setType(e.target.value)}>
-          <option className='capitalize' value={type}>{type}</option>
-            {
-              categories.length > 0 && categories.map(category => 
-                  <option value={category.category}>{category.category}</option>
-              )
-            }
-          </Select>
-        </Label>
-        <Label className="mt-2">
-          <span>Product Name</span>
-          <Input className="mt-1" type="email" placeholder="Product name" value={productName} onChange={e => setProductName(e.target.value)} required/>
-        </Label>
-
-        <Label className="mt-2">
-          <span>Description</span>
-          <Textarea className="mt-1" rows="2" placeholder="Enter some description" value={description} onChange={e => setDescription(e.target.value)} required />
-        </Label>
-
-        <Label className="mt-2">
-          <span>Size</span>
-          <Input className="mt-1" type="text" placeholder="description" value={size} onChange={e => setSize(e.target.value)} required/>
-        </Label>
-
-        <Label className="mt-2">
-          <span>Colors</span>
-          <div className="relative mt-1">
-            <div
-              className="flex items-center justify-between w-full border rounded-lg px-3 py-2 cursor-pointer bg-white dark:bg-gray-700"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {colors.length > 0 ? `${colors.length} selected` : 'Select colors'}
-              </span>
-              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-
-            {dropdownOpen && (
-              <div className="absolute z-10 mt-1 w-full max-h-48 overflow-y-auto border rounded-lg bg-white dark:bg-gray-700 shadow-lg">
-                {AVAILABLE_COLORS.map((color) => (
-                  <label
-                    key={color}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={colors.includes(color)}
-                      onChange={() => toggleColor(color)}
-                    />
-                    <span
-                      className="w-3 h-3 rounded-full border"
-                      style={{ backgroundColor: COLOR_SWATCHES[color] }}
-                    />
-                    <span className="text-sm">{color}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {colors.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {colors.map((color) => (
-                <div key={color} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-full border">
-                  <span className="w-3 h-3 rounded-full border" style={{ backgroundColor: COLOR_SWATCHES[color] }} />
-                  <span className="text-xs">{color}</span>
-                  <button
-                    type="button"
-                    className="text-gray-400 hover:text-red-500 ml-1"
-                    onClick={() => toggleColor(color)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </Label>
-
-        <Label className="mt-2">
-          <span>Price</span>
-          <Input className="mt-1" type="number" placeholder="0" value={price} onChange={e => setPrice(e.target.value)} required/>
-        </Label>
-
-        </ModalBody>
-        <ModalFooter>
-          <div className="hidden sm:block">
-            <Button layout="outline" onClick={closeEditModal}>
-              Cancel
-            </Button>
-          </div>
-          <div className="hidden sm:block" onClick={handleEdit}>
-            <Button>Submit</Button>
-          </div>
-          <div className="block w-full sm:hidden">
-            <Button block size="large" layout="outline" onClick={closeEditModal}>
-              Cancel
-            </Button>
-          </div>
-          <div className="block w-full sm:hidden">
-            <Button block size="large" onClick={handleEdit}>
-              Submit
-            </Button>
-          </div>
-        </ModalFooter>
-      </Modal>
+      <ProductFormModal
+        isOpen={isEditOpen}
+        mode="edit"
+        initialValues={editInitialValues}
+        categories={categories}
+        error={error}
+        onClose={() => setIsEditOpen(false)}
+        onSubmit={handleEdit}
+      />
 
       <TableContainer className="mb-8">
-        <Table>
-          <TableHeader>
-            <tr>
-              <TableCell>Image</TableCell>
-              <TableCell>Name & Category</TableCell>
-              <TableCell>Size</TableCell>
-              <TableCell>Colors</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell className="text-center">In Stock?</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Edit</TableCell>
-              <TableCell>Delete</TableCell>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {
-            
-            loading ? <TableCell>Loading...</TableCell> :
-
-            data.length === 0 ? <TableCell>No Records</TableCell> :
-            
-            data.map((dt, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                    <img
+        <DualScrollTable>
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableCell>Image</TableCell>
+                <TableCell>Name & Category</TableCell>
+                <TableCell>Size</TableCell>
+                <TableCell>Colors</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell className="text-center">In Stock?</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Edit</TableCell>
+                <TableCell>Delete</TableCell>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <tr><TableCell>Loading...</TableCell></tr>
+              ) : data.length === 0 ? (
+                <tr><TableCell>No Records</TableCell></tr>
+              ) : (
+                data.map((dt) => (
+                  <TableRow key={dt._id}>
+                    <TableCell>
+                      <img
                         src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
-                        onClick={handleImageClick}
-                    />
-
-                    {isOpen && (
-                        <div 
-                            style={{
-                                position: 'fixed',
-                                top: 0,
-                                left: 0,
-                                width: '100vw',
-                                height: '100vh',
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                zIndex: 1000
-                            }}
-                            onClick={handleClose}
-                        >
-                            <div 
-                                style={{
-                                    position: 'relative',
-                                    maxWidth: '90vw',
-                                    maxHeight: '90vh',
-                                    background: 'white',
-                                    padding: '20px',
-                                    borderRadius: '8px'
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <button 
-                                    style={{
-                                        position: 'absolute',
-                                        top: '10px',
-                                        right: '10px',
-                                        background: 'red',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '30px',
-                                        height: '30px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold',
-                                        zIndex: 1001
-                                    }}
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    X
-                                </button>
-                                <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '80vh',
-                                        objectFit: 'contain'
-                                    }}
-                                    alt="No image Uploaded"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </TableCell>
-                <TableCell>
-                    <span className="text-sm">#{dt.productId}</span>
-                    <br />
-                    <span className="text-sm">{dt.productName}</span>
-                    <br />
-                    <span className="text-xs capitalize">{dt.type}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{dt.size}</span>
-                </TableCell>
-                <TableCell>
-                  {dt.colors && dt.colors.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 max-w-[120px]">
-                      {dt.colors.map((color, idx) => (
-                        <span
-                          key={idx}
-                          title={color}
-                          className="w-4 h-4 rounded-full border border-gray-300 inline-block"
-                          style={{ backgroundColor: COLOR_SWATCHES[color] || '#ccc' }}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <ReadMoreText description={dt.description} />
-                </TableCell>
-                <TableCell>
-                  <div className='flex justify-center'>
-                      <Input type="checkbox" 
-                      className="border border-black"
-                      checked={dt.availability}
-                      onChange={(e)=> handleAvailabilityToggle( dt._id ,e.target.checked)}
+                        onClick={() => setPreviewImage(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`)}
                       />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs capitalize">Ksh. {dt.price}</span>
-                </TableCell>
-                <TableCell>
-                    <button 
-                    onClick={ e=> {
-                      e.preventDefault();
-                      setEditId(dt._id);
-                      setProductName(dt.productName);
-                      setType(dt.type);
-                      setPrice(dt.price);
-                      setDescription(dt.description);
-                      setColors(dt.colors || []);
-                      setSize(dt.size);
-                      setImageSrc(dt.image);
-                      const imageUrls = dt.image.map(image => `${process.env.REACT_APP_API_URL}/uploads/${image}`);
-                      setImageUrl(prevImageUrls => [...prevImageUrls, ...imageUrls]);
-                      openEditModal();
-                    }} 
-                    className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>
-                      Edit
-                    </button>
-                </TableCell>
-                <TableCell>
-                    <button onClick={e => {
-                        e.preventDefault();
-                        handleDeleteItem(dt._id);
-                    }} className='text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white'>Delete</button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">#{dt.productId}</span>
+                      <br />
+                      <span className="text-sm">{dt.productName}</span>
+                      <br />
+                      <span className="text-xs capitalize">{dt.type}</span>
+                    </TableCell>
+                    <TableCell><span className="text-sm">{dt.size}</span></TableCell>
+                    <TableCell><ColorDots colors={dt.colors} /></TableCell>
+                    <TableCell><ReadMoreText description={dt.description} /></TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <Input
+                          type="checkbox"
+                          className="border border-black"
+                          checked={dt.availability}
+                          onChange={(e) => handleAvailabilityToggle(dt._id, e.target.checked)}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell><span className="text-xs capitalize">Ksh. {dt.price}</span></TableCell>
+                    <TableCell>
+                      <button
+                        onClick={(e) => { e.preventDefault(); openEditFor(dt) }}
+                        className="text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        Edit
+                      </button>
+                    </TableCell>
+                    <TableCell>
+                      <button
+                        onClick={(e) => { e.preventDefault(); handleDeleteItem(dt._id) }}
+                        className="text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        Delete
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DualScrollTable>
         <TableFooter>
+          <Pagination
+            totalResults={totalResults}
+            resultsPerPage={resultsPerPage}
+            onChange={setPage}
+            label="Table Navigation"
+          />
         </TableFooter>
       </TableContainer>
+
+      <ImagePreviewModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </>
   )
 }

@@ -1,143 +1,64 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useContext, useState } from 'react'
 
 import PageTitle from '../components/Typography/PageTitle'
-import SectionTitle from '../components/Typography/SectionTitle'
 import {
-  Table,
-  TableHeader,
-  TableCell,
-  TableBody,
-  TableRow,
-  TableFooter,
-  TableContainer,
-  Badge,
-  Avatar,
-  Button,
-  Pagination,
+  Table, TableHeader, TableCell, TableBody, TableRow, TableFooter, TableContainer,
+  Modal, ModalHeader, ModalBody, ModalFooter, Label, Textarea, Button, Pagination,
 } from '@windmill/react-ui'
 
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '@windmill/react-ui'
-import { Input, HelperText, Label, Select, Textarea } from '@windmill/react-ui'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-import { EditIcon, TrashIcon } from '../icons'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
-import '../assets/css/ImagePopup.css';
+import '../assets/css/ImagePopup.css'
 
-const response2 = response.concat([])
-
-// optional: for rendering a little swatch next to each name
-const COLOR_SWATCHES = {
-  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
-  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
-  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
-  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
-};
+import ColorDots from '../components/ColorDots'
+import ImagePreviewModal from '../components/ImagePreviewModal'
+import ProductSearchBar from '../components/ProductSearchBar'
+import DualScrollTable from '../components/DualScrollTable'
+import useProductList from '../hooks/useProductList'
 
 function PendingProducts() {
-  const [pageTable, setPageTable] = useState(1)
-  const [page, setPage] = useState(1)
-  const [data, setData] = useState([])
+  const { token } = useContext(AuthContext)
+  useAuthCheck()
 
-  // setup data for every table
-  const [loading, setLoading] = useState(true)
+  const {
+    data, loading, refresh, searchTerm, setSearchTerm,
+    category, setCategory, categories, setPage, totalResults, resultsPerPage,
+  } = useProductList(`${process.env.REACT_APP_API_URL}/get_unapproved_products`, null, 10)
 
-  // pagination setup
-  const resultsPerPage = 5
+  const [previewImage, setPreviewImage] = useState(null)
+  const [dissapprovalReason, setDissapprovalReason] = useState(null)
+  const [isRejectOpen, setIsRejectOpen] = useState(false)
+  const [editId, setEditId] = useState(null)
 
-  const [totalResults, setTotalResults] = useState(0);
-
-  // pagination change control
-  function onPageChangeTable(p) {
-    setPageTable(p)
-  }
-
-
-
-  const [change, setChange] = useState(false);
-  const { token } = useContext(AuthContext);
-  useAuthCheck();
-
-  useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_unapproved_products`)
-    .then( data => data.json())
-    .then( data => {
-      //setDeliveredOrders(data); 
-      //setTotalResults(data.length);
-      setData(data)
-      setLoading(false);
-    } )
-    .catch( err => { console.log(err) })
-  },[change])
-
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleImageClick = () => {
-      setIsOpen(true);
-  };
-
-  const handleClose = (e) => {
-      if (e.target.style.position === 'fixed') {
-          setIsOpen(false);
-      }
-  };
-
-  const [dissapprovalReason, setDissapprovalReason] = useState(null);
-
-  const handleApproval = (item_id, approval_value) => {
-    fetch(`${process.env.REACT_APP_API_URL}/approve_product/${item_id}`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        'Authorization':`Bearer ${token}`
-      },
-      body: JSON.stringify({
-        approval_value,
-        dissapprovalReason
-      })
+  const handleApproval = (itemId, approvalValue) => {
+    fetch(`${process.env.REACT_APP_API_URL}/approve_product/${itemId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ approval_value: approvalValue, dissapprovalReason }),
     })
-    .then((response)=>{
-      if(response.ok){
-          toast('Success',{
-              type:'success'
-          })
-          setChange(true);
-      }else{
-        response.json().then( err => {
-          console.log(err)
-          })
-          toast('Server Error',{
-              type:'error'
-          })
-      }
-  })
-  .catch((err)=>{
-      toast('Server Error',{
-          type:'error'
+      .then((res) => {
+        if (res.ok) {
+          toast('Success', { type: 'success' })
+          refresh()
+        } else {
+          res.json().then((err) => console.log(err))
+          toast('Server Error', { type: 'error' })
+        }
       })
-  })
+      .catch(() => toast('Server Error', { type: 'error' }))
   }
 
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
-
-  function openEditModal() {
-    setIsEditModalOpen(true)
+  const closeRejectModal = () => {
+    setDissapprovalReason(null)
+    setIsRejectOpen(false)
   }
 
-  function closeEditModal(){
-    setDissapprovalReason(null);
-    setIsEditModalOpen(false);
-  }
-
-  const handleEdit = () =>{
-    handleApproval(editId, 2);
-    closeEditModal();
+  const submitRejection = () => {
+    handleApproval(editId, 2)
+    closeRejectModal()
   }
 
   return (
@@ -145,185 +66,118 @@ function PendingProducts() {
       <PageTitle>Products Pending Approval</PageTitle>
       <ToastContainer />
 
-      <TableContainer className="mb-8">
-        <Table>
-          <TableHeader>
-            <tr>
-              <TableCell>Image</TableCell>
-              <TableCell>Name & Category</TableCell>
-              <TableCell>Size</TableCell>
-              <TableCell>Colors</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Approve/Reject</TableCell>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {
-            
-            loading ? <TableCell>Loading...</TableCell> :
+      <ProductSearchBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        category={category}
+        onCategoryChange={setCategory}
+        categories={categories}
+      />
 
-            data.length === 0 ? <TableCell>No Records</TableCell> :
-            
-            data.map((dt, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                    <img
+      <TableContainer className="mb-8">
+        <DualScrollTable>
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableCell>Image</TableCell>
+                <TableCell>Name & Category</TableCell>
+                <TableCell>Size</TableCell>
+                <TableCell>Colors</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Approve/Reject</TableCell>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <tr><TableCell>Loading...</TableCell></tr>
+              ) : data.length === 0 ? (
+                <tr><TableCell>No Records</TableCell></tr>
+              ) : (
+                data.map((dt) => (
+                  <TableRow key={dt._id}>
+                    <TableCell>
+                      <img
                         src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
-                        onClick={handleImageClick}
-                    />
-
-                    {isOpen && (
-                        <div 
-                            style={{
-                                position: 'fixed',
-                                top: 0,
-                                left: 0,
-                                width: '100vw',
-                                height: '100vh',
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                zIndex: 1000
-                            }}
-                            onClick={handleClose}
+                        onClick={() => setPreviewImage(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">#{dt.productId}</span>
+                      <br />
+                      <span className="text-sm">{dt.productName}</span>
+                      <br />
+                      <span className="text-xs capitalize">{dt.type}</span>
+                    </TableCell>
+                    <TableCell><span className="text-sm">{dt.size}</span></TableCell>
+                    <TableCell><ColorDots colors={dt.colors} /></TableCell>
+                    <TableCell><span className="text-xs capitalize">{dt.description}</span></TableCell>
+                    <TableCell><span className="text-xs capitalize">Ksh. {dt.price}</span></TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => { e.preventDefault(); handleApproval(dt._id, 1) }}
+                          className="text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white"
                         >
-                            <div 
-                                style={{
-                                    position: 'relative',
-                                    maxWidth: '90vw',
-                                    maxHeight: '90vh',
-                                    background: 'white',
-                                    padding: '20px',
-                                    borderRadius: '8px'
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                <button 
-                                    style={{
-                                        position: 'absolute',
-                                        top: '10px',
-                                        right: '10px',
-                                        background: 'red',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '50%',
-                                        width: '30px',
-                                        height: '30px',
-                                        cursor: 'pointer',
-                                        fontWeight: 'bold',
-                                        zIndex: 1001
-                                    }}
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    X
-                                </button>
-                                <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '80vh',
-                                        objectFit: 'contain'
-                                    }}
-                                    alt="No image Uploaded"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </TableCell>
-                <TableCell>
-                    <span className="text-sm">#{dt.productId}</span>
-                    <br />
-                    <span className="text-sm">{dt.productName}</span>
-                    <br />
-                    <span className="text-xs capitalize">{dt.type}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{dt.size}</span>
-                </TableCell>
-                <TableCell>
-                  {dt.colors && dt.colors.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 max-w-[120px]">
-                      {dt.colors.map((color, idx) => (
-                        <span
-                          key={idx}
-                          title={color}
-                          className="w-4 h-4 rounded-full border border-gray-300 inline-block"
-                          style={{ backgroundColor: COLOR_SWATCHES[color] || '#ccc' }}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs capitalize">{dt.description}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs capitalize">Ksh. {dt.price}</span>
-                </TableCell>
-                <TableCell>
-                  <div className='flex gap-2'>
-                      <button 
-                      onClick={ e=> {
-                        e.preventDefault();
-                        handleApproval(dt._id, 1);
-                      }} 
-                      className='text-xs p-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white'>
-                        Approve
-                      </button>
-                      <button onClick={e => {
-                          e.preventDefault();
-                          setEditId(dt._id);
-                          openEditModal();
-                      }} className='text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white'>
-                        Reject
-                      </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                          Approve
+                        </button>
+                        <button
+                          onClick={(e) => { e.preventDefault(); setEditId(dt._id); setIsRejectOpen(true) }}
+                          className="text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DualScrollTable>
         <TableFooter>
+          <Pagination
+            totalResults={totalResults}
+            resultsPerPage={resultsPerPage}
+            onChange={setPage}
+            label="Table Navigation"
+          />
         </TableFooter>
       </TableContainer>
 
-      <Modal isOpen={isEditModalOpen} onClose={closeEditModal}>
+      <Modal isOpen={isRejectOpen} onClose={closeRejectModal}>
         <ModalHeader>Reject product application</ModalHeader>
         <ModalBody>
-
-        <Label className="mt-2">
-          <span>Reason For Denial</span>
-          <Textarea className="mt-1" rows="3" placeholder="Reason for denial" onChange={e => setDissapprovalReason(e.target.value)} required />
-        </Label>
-
+          <Label className="mt-2">
+            <span>Reason For Denial</span>
+            <Textarea
+              className="mt-1"
+              rows="3"
+              placeholder="Reason for denial"
+              onChange={(e) => setDissapprovalReason(e.target.value)}
+              required
+            />
+          </Label>
         </ModalBody>
         <ModalFooter>
           <div className="hidden sm:block">
-            <Button layout="outline" onClick={closeEditModal}>
-              Cancel
-            </Button>
+            <Button layout="outline" onClick={closeRejectModal}>Cancel</Button>
           </div>
-          <div className="hidden sm:block" onClick={handleEdit}>
+          <div className="hidden sm:block" onClick={submitRejection}>
             <Button>Submit Rejection</Button>
           </div>
           <div className="block w-full sm:hidden">
-            <Button block size="large" layout="outline" onClick={closeEditModal}>
-              Cancel
-            </Button>
+            <Button block size="large" layout="outline" onClick={closeRejectModal}>Cancel</Button>
           </div>
-          <div className="block w-full sm:hidden">
-            <Button block size="large" onClick={handleEdit}>
-              Submit Rejection
-            </Button>
+          <div className="block w-full sm:hidden" onClick={submitRejection}>
+            <Button block size="large">Submit Rejection</Button>
           </div>
         </ModalFooter>
       </Modal>
+
+      <ImagePreviewModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </>
   )
 }

@@ -1,164 +1,65 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useContext, useState } from 'react'
 
 import PageTitle from '../components/Typography/PageTitle'
-import SectionTitle from '../components/Typography/SectionTitle'
 import {
-  Table,
-  TableHeader,
-  TableCell,
-  TableBody,
-  TableRow,
-  TableFooter,
-  TableContainer,
-  Badge,
-  Avatar,
-  Button,
-  Pagination,
+  Table, TableHeader, TableCell, TableBody, TableRow,
+  TableFooter, TableContainer, Input, Pagination,
 } from '@windmill/react-ui'
 
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '@windmill/react-ui'
-import { Input, HelperText, Label, Select, Textarea } from '@windmill/react-ui'
+import { ToastContainer, toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-import { EditIcon, TrashIcon } from '../icons'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import response from '../utils/demo/tableData'
 import { AuthContext } from '../context/AuthContext'
 import useAuthCheck from '../utils/useAuthCheck'
-import '../assets/css/ImagePopup.css';
+import '../assets/css/ImagePopup.css'
 import ReadMoreText from '../components/ReadMoreText'
 
-const response2 = response.concat([])
-
-// optional: for rendering a little swatch next to each name
-const COLOR_SWATCHES = {
-  Black: '#000000', White: '#FFFFFF', Grey: '#808080', Red: '#DC2626',
-  Orange: '#EA580C', Yellow: '#EAB308', Green: '#16A34A', Blue: '#2563EB',
-  Navy: '#1E3A8A', Purple: '#9333EA', Pink: '#EC4899', Brown: '#78350F',
-  Beige: '#D8C3A5', Gold: '#D4AF37', Silver: '#C0C0C0'
-};
+import ColorDots from '../components/ColorDots'
+import ImagePreviewModal from '../components/ImagePreviewModal'
+import ProductSearchBar from '../components/ProductSearchBar'
+import DualScrollTable from '../components/DualScrollTable'
+import useProductList from '../hooks/useProductList'
 
 function ApprovedProducts() {
-  const [pageTable, setPageTable] = useState(1)
-  const [page, setPage] = useState(1)
-  const [data, setData] = useState([])
+  const { token } = useContext(AuthContext)
+  useAuthCheck()
 
-  // setup data for every table
-  const [loading, setLoading] = useState(true)
+  const {
+    data, loading, refresh, searchTerm, setSearchTerm,
+    category, setCategory, categories, setPage, totalResults, resultsPerPage,
+  } = useProductList(`${process.env.REACT_APP_API_URL}/get_all_approved_products`, null, 10)
 
-  // pagination setup
-  const resultsPerPage = 5
-
-  const [totalResults, setTotalResults] = useState(0);
-
-  // pagination change control
-  function onPageChangeTable(p) {
-    setPageTable(p)
-  }
-  const [productName, setProductName] = useState(null);
-  const [type, setType] = useState(null);
-  const [price, setPrice] = useState(0);
-  const [description, setDescription] = useState(null);
-  const [size, setSize] = useState(null);
-  const [error, setError] = useState(null);
-
-  const [imageSrc, setImageSrc] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
-
-
-  const [change, setChange] = useState(false);
-  const { token } = useContext(AuthContext);
-  useAuthCheck();
-
-  useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/get_all_approved_products`)
-    .then( data => data.json())
-    .then( data => {
-      //setDeliveredOrders(data); 
-      //setTotalResults(data.length);
-      console.log(data)
-      setData(data)
-      setLoading(false);
-    } )
-    .catch( err => { console.log(err) })
-  },[change])
-
+  const [previewImage, setPreviewImage] = useState(null)
 
   const handleAvailabilityToggle = (id, value) => {
-      fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`,{
-          method: 'POST',
-          headers:{
-              'Content-Type':'application/json',
-              'Authorization':`Bearer ${token}`
-          },
-          body: JSON.stringify({
-              value: value
-          })
+    fetch(`${process.env.REACT_APP_API_URL}/change_availability/${id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ value }),
+    })
+      .then((res) => {
+        toast(res.ok ? 'Status Updated' : 'Server Error', { type: res.ok ? 'success' : 'error' })
+        if (res.ok) refresh()
       })
-      .then((response)=>{
-          if(response.ok){
-              toast('Status Updated',{
-                  type:'success'
-              })
-              setChange(!change);
-          }else{
-              toast('Server Error',{
-                  type:'error'
-              })
-          }
-      })
-      .catch((err)=>{
-          toast('Server Error',{
-              type:'error'
-          })
-      })
+      .catch(() => toast('Server Error', { type: 'error' }))
   }
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleImageClick = () => {
-      setIsOpen(true);
-  };
-
-  const handleClose = () => {
-      setIsOpen(false);
-  };
-
-  const [dissapprovalReason, setDissapprovalReason] = useState(null);
-
-  const handleApproval = (item_id, approval_value) => {
-    fetch(`${process.env.REACT_APP_API_URL}/approve_product/${item_id}`,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        'Authorization':`Bearer ${token}`
-      },
-      body: JSON.stringify({
-        approval_value,
-        dissapprovalReason
-      })
+  const handleApproval = (itemId, approvalValue) => {
+    fetch(`${process.env.REACT_APP_API_URL}/approve_product/${itemId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ approval_value: approvalValue, dissapprovalReason: null }),
     })
-    .then((response)=>{
-      if(response.ok){
-          toast('Success',{
-              type:'success'
-          })
-          setChange(true);
-      }else{
-        response.json().then( err => {
-          console.log(err)
-          })
-          toast('Server Error',{
-              type:'error'
-          })
-      }
-  })
-  .catch((err)=>{
-      toast('Server Error',{
-          type:'error'
+      .then((res) => {
+        if (res.ok) {
+          toast('Success', { type: 'success' })
+          refresh()
+        } else {
+          res.json().then((err) => console.log(err))
+          toast('Server Error', { type: 'error' })
+        }
       })
-  })
+      .catch(() => toast('Server Error', { type: 'error' }))
   }
 
   return (
@@ -166,111 +67,93 @@ function ApprovedProducts() {
       <PageTitle>Approved Products</PageTitle>
       <ToastContainer />
 
-      <TableContainer className="mb-8">
-        <Table>
-          <TableHeader>
-            <tr>
-              <TableCell>Image</TableCell>
-              <TableCell>Name & Category</TableCell>
-              <TableCell>Size</TableCell>
-              <TableCell>Colors</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell className="text-center">In Stock?</TableCell>
-              <TableCell>Price</TableCell>
-              <TableCell>Actions</TableCell>
-            </tr>
-          </TableHeader>
-          <TableBody>
-            {
-            
-            loading ? <TableCell>Loading...</TableCell> :
+      <ProductSearchBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        category={category}
+        onCategoryChange={setCategory}
+        categories={categories}
+      />
 
-            data.length === 0 ? <TableCell>No Records</TableCell> :
-            
-            data.map((dt, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                    <img
+      <TableContainer className="mb-8">
+        <DualScrollTable>
+          <Table>
+            <TableHeader>
+              <tr>
+                <TableCell>Image</TableCell>
+                <TableCell>Name & Category</TableCell>
+                <TableCell>Size</TableCell>
+                <TableCell>Colors</TableCell>
+                <TableCell>Description</TableCell>
+                <TableCell className="text-center">In Stock?</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Actions</TableCell>
+              </tr>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <tr><TableCell>Loading...</TableCell></tr>
+              ) : data.length === 0 ? (
+                <tr><TableCell>No Records</TableCell></tr>
+              ) : (
+                data.map((dt) => (
+                  <TableRow key={dt._id}>
+                    <TableCell>
+                      <img
                         src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`}
                         className="p-0 rounded-t-lg h-40 w-40 object-contain cursor-pointer"
                         alt="No image Uploaded"
-                        onClick={handleImageClick}
-                    />
-
-                    {isOpen && (
-                        <div className="modal-overlay" onClick={handleClose}>
-                            <div className="modal-content">
-                                <button className="close-button" onClick={handleClose}>X</button>
-                                <img
-                                    src={`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0][0]}`}
-                                    className="modal-image"
-                                    alt="No image Uploaded"
-                                />
-                            </div>
-                        </div>
-                    )}
-                </TableCell>
-                <TableCell>
-                    <span className="text-sm">#{dt.productId}</span>
-                    <br />
-                    <span className="text-sm">{dt.productName}</span>
-                    <br />
-                    <span className="text-xs capitalize">{dt.type}</span>
-                </TableCell>
-                <TableCell>
-                  <span className="text-sm">{dt.size}</span>
-                </TableCell>
-                <TableCell>
-                  {dt.colors && dt.colors.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 max-w-[120px]">
-                      {dt.colors.map((color, idx) => (
-                        <span
-                          key={idx}
-                          title={color}
-                          className="w-4 h-4 rounded-full border border-gray-300 inline-block"
-                          style={{ backgroundColor: COLOR_SWATCHES[color] || '#ccc' }}
-                        />
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <ReadMoreText description={dt.description} />
-                  {/* <span className="text-xs capitalize">{dt.description}</span> */}
-                </TableCell>
-                <TableCell>
-                  <div className='flex justify-center'>
-                      <Input type="checkbox" 
-                      className="border border-black"
-                      checked={dt.availability}
-                      onChange={(e)=> handleAvailabilityToggle( dt._id ,e.target.checked)}
+                        onClick={() => setPreviewImage(`${process.env.REACT_APP_API_URL}/uploads/${dt.image[0]}`)}
                       />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs capitalize">Ksh. {dt.price}</span>
-                </TableCell>
-                <TableCell>
-                  <div className='flex gap-2'>
-                      <button 
-                      onClick={ e=> {
-                        e.preventDefault();
-                        handleApproval(dt._id, 0);
-                      }} 
-                      className='text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white'>
-                        Recall Approval
-                      </button>        
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm">#{dt.productId}</span>
+                      <br />
+                      <span className="text-sm">{dt.productName}</span>
+                      <br />
+                      <span className="text-xs capitalize">{dt.type}</span>
+                    </TableCell>
+                    <TableCell><span className="text-sm">{dt.size}</span></TableCell>
+                    <TableCell><ColorDots colors={dt.colors} /></TableCell>
+                    <TableCell><ReadMoreText description={dt.description} /></TableCell>
+                    <TableCell>
+                      <div className="flex justify-center">
+                        <Input
+                          type="checkbox"
+                          className="border border-black"
+                          checked={dt.availability}
+                          onChange={(e) => handleAvailabilityToggle(dt._id, e.target.checked)}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell><span className="text-xs capitalize">Ksh. {dt.price}</span></TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => { e.preventDefault(); handleApproval(dt._id, 0) }}
+                          className="text-xs p-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Recall Approval
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DualScrollTable>
         <TableFooter>
+          <Pagination
+            totalResults={totalResults}
+            resultsPerPage={resultsPerPage}
+            onChange={setPage}
+            label="Table Navigation"
+          />
         </TableFooter>
       </TableContainer>
+
+      <ImagePreviewModal src={previewImage} onClose={() => setPreviewImage(null)} />
     </>
   )
 }
