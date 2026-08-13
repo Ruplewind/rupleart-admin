@@ -7,7 +7,7 @@ export default function useProductList(fetchUrl, token, resultsPerPage = 15) {
   const [rawData, setRawData] = useState([])
   const [loading, setLoading] = useState(true)
   const [change, setChange] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
+  const [searchTerm, setSearchTermRaw] = useState('')
   const [category, setCategory] = useState('')
   const [page, setPage] = useState(1)
 
@@ -33,10 +33,14 @@ export default function useProductList(fetchUrl, token, resultsPerPage = 15) {
     [rawData]
   )
 
+  // Users may type the productId with or without its leading '#' (as shown
+  // in the table); strip it so both forms match.
+  const setSearchTerm = (value) => setSearchTermRaw(value.replace(/#/g, ''))
+
   const filtered = useMemo(() => {
     return rawData.filter((dt) => {
       const matchesSearch =
-        !searchTerm || dt.productName?.toLowerCase().includes(searchTerm.toLowerCase())
+        !searchTerm || String(dt.productId ?? '').toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = !category || dt.type === category
       return matchesSearch && matchesCategory
     })

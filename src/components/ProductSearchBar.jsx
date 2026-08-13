@@ -13,7 +13,7 @@ export default function ProductSearchBar({
       <Input
         className="sm:w-64"
         type="text"
-        placeholder="Search by product name..."
+        placeholder="Search by product ID (e.g. #1024 or 1024)..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
       />
