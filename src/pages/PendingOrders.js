@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react'
-
+import React, { useState, useEffect, useContext, useMemo } from 'react'
+import FlowerDeliveryInfo, { isSameDayFlowerOrder, flowerRowClass } from '../components/FlowerDeliveryInfo'
 import PageTitle from '../components/Typography/PageTitle'
-import SectionTitle from '../components/Typography/SectionTitle'
 import {
   Table,
   TableHeader,
@@ -10,12 +9,8 @@ import {
   TableRow,
   TableFooter,
   TableContainer,
-  Badge,
-  Avatar,
   Button,
-  Pagination,
 } from '@windmill/react-ui'
-import { EditIcon, TrashIcon } from '../icons'
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -65,57 +60,52 @@ function PendingOrders() {
   const { token } = useContext(AuthContext);
   useAuthCheck();
 
-  useEffect(()=>{
-    fetch(`${process.env.REACT_APP_API_URL}/GetPendingOrders`,{
-      headers: {
-        'Authorization':`Bearer ${token}`
-      }
-    })
-    .then( data => data.json())
-    .then( data => { 
-      //setDeliveredOrders(data); 
+  const [refreshKey, setRefreshKey] = useState(0)
 
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/GetPendingOrders`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.json())
+    .then(orders =>
       Promise.all(
-        data.map(order =>
-          fetch(`${process.env.REACT_APP_API_URL}/get_location/${order.deliveryLocation}`,{
-            headers: {
-              'Authorization':`Bearer ${token}`
-            }
+        orders.map(order =>
+          fetch(`${process.env.REACT_APP_API_URL}/get_location/${order.deliveryLocation}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
           })
-          .then(response => response.json())
-          .then(location => ({ ...order, deliveryLocation: location.town  }))
+          .then(r => r.json())
+          .then(location => ({ ...order, deliveryLocation: location.town }))
         )
-      ).then(ordersWithData => {
-        //setTotalResults(ordersWithData.length);
-        setData(ordersWithData)
-        console.log(data)
-        setLoading(false);
-      });
+      )
+    )
+    .then(ordersWithData => {
+      setData(ordersWithData)
+      setLoading(false)
     })
-    .catch( err => { console.log(err) })
-  },[data])
+    .catch(err => { console.log(err); setLoading(false) })
+  }, [token, refreshKey])
 
-  const handleUpdate = (id) =>{
-    fetch(`${process.env.REACT_APP_API_URL}/update_transit/${id}`,{
+  const handleUpdate = (id) => {
+    fetch(`${process.env.REACT_APP_API_URL}/update_transit/${id}`, {
       method: 'PUT',
-      headers: {
-        'Authorization':`Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
     .then(response => response.json())
-    .then( response => {
-      if(response == 'success'){
-        toast('Success',{
-          type:'success'
-        })
-      }else{
-        toast('Failed',{
-          type:'error'
-        })
+    .then(response => {
+      if (response === 'success') {
+        toast('Success', { type: 'success' })
+        setRefreshKey(k => k + 1)
+      } else {
+        toast('Failed', { type: 'error' })
       }
     })
-    .catch(err => {console.log(err)})
+    .catch(err => { console.log(err) })
   }
+
+  const rows = useMemo(
+    () => [...data].reverse().sort((a, b) => isSameDayFlowerOrder(b) - isSameDayFlowerOrder(a)),
+    [data]
+  )
 
   return (
     <>
@@ -141,8 +131,8 @@ function PendingOrders() {
 
             data.length === 0 ? <TableCell>No Records</TableCell> :
             
-            data.reverse().map((dt, i) => (
-              <TableRow key={i}>
+            rows.map((dt) => (
+              <TableRow key={dt._id} className={flowerRowClass(dt)}>
                 <TableCell>
                   <div className="flex items-center">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
@@ -192,7 +182,8 @@ function PendingOrders() {
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">{dt.deliveryLocation}</div>
-                  <div className="text-xs">Ksh. { dt.delivery_cost }</div>
+                  <div className="text-xs">Ksh. {dt.delivery_cost}</div>
+                  <FlowerDeliveryInfo order={dt} />
                 </TableCell>
                 {/* <TableCell>
                   <span className="text-xs">Ksh. {Math.floor(dt.total_price) }</span>

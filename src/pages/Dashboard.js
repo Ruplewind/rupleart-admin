@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
-
+import FlowerDeliveryInfo, { flowerRowClass } from '../components/FlowerDeliveryInfo'
 import InfoCard from '../components/Cards/InfoCard'
-import ChartCard from '../components/Chart/ChartCard'
-import { Doughnut, Line } from 'react-chartjs-2'
-import ChartLegend from '../components/Chart/ChartLegend'
 import PageTitle from '../components/Typography/PageTitle'
 import { RevenueIcon, CompleteIcon, PendingIcon, OrderIcon } from '../icons'
 import RoundIcon from '../components/RoundIcon'
@@ -200,7 +197,7 @@ function Dashboard() {
             }
             { !loading && 
             data.slice(Math.max(data.length - 5, 0)).reverse().map((order, i) => (
-              <TableRow key={i}>
+              <TableRow key={order._id} className={flowerRowClass(order)}>
                 <TableCell>
                   <div className="flex items-center text-sm">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User image" /> */}
@@ -249,6 +246,7 @@ function Dashboard() {
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">{order.deliveryLocation}</span>
+                  <FlowerDeliveryInfo order={order} />
                 </TableCell>
                 <TableCell>
                   <span className="text-sm">ksh. {order.total_price + order.delivery_cost}</span>

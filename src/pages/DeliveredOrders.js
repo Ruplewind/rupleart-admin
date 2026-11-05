@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
-
+import FlowerDeliveryInfo, { flowerRowClass } from '../components/FlowerDeliveryInfo'
 import PageTitle from '../components/Typography/PageTitle'
 import SectionTitle from '../components/Typography/SectionTitle'
 import {
@@ -123,8 +123,8 @@ function Tables() {
 
             data.length === 0 ? <TableCell>No Records</TableCell> :
             
-            data.reverse().map((dt, i) => (
-              <TableRow key={i}>
+            [...data].reverse().map((dt) => (
+              <TableRow key={dt._id} className={flowerRowClass(dt)}>
                 <TableCell>
                   <div className="flex items-center text-sm">
                     {/* <Avatar className="hidden mr-3 md:block" src={user.avatar} alt="User avatar" /> */}
@@ -174,7 +174,8 @@ function Tables() {
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">{dt.deliveryLocation}</div>
-                  <div className="text-xs">Ksh. { dt.delivery_cost }</div>
+                  <div className="text-xs">Ksh. {dt.delivery_cost}</div>
+                  <FlowerDeliveryInfo order={dt} />
                 </TableCell>
                 {/* <TableCell>
                   <span className="text-sm">Ksh. {Math.floor(dt.total_price) }</span>
