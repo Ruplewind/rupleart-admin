@@ -67,6 +67,8 @@ function ManageRegularUsers() {
   const [passLength, setPassLength] = useState(false);
   const [same, setSame] = useState(false);
   const [error, setError] = useState(false);
+  const [adsBusy, setAdsBusy] = useState({});     // user ids with a request in flight
+  const [adsOnly, setAdsOnly] = useState(false);  // filter: only users who can post ads
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -206,24 +208,47 @@ function ManageRegularUsers() {
 
   const [search, setSearch] = useState(null);
 
-    const filteredData = data.filter((item)=>{
-                    
-        if(search === '' || search === null){
-            return item;
-        }else if(
-            item.email.toLowerCase().includes(search.toLowerCase())
-        ){
-            return item;
-        }else if(
-          item.first_name.toLowerCase().includes(search.toLowerCase())
-        ){
-            return item;
-        }else if(
-          item.second_name.toLowerCase().includes(search.toLowerCase())
-        ){
-            return item;
-        }
+    const filteredData = data.filter((item) => {
+      if (adsOnly && !item.canPostAds) return false
+      if (search === '' || search === null) return true
+      const q = search.toLowerCase()
+      return (
+        (item.email || '').toLowerCase().includes(q) ||
+        (item.first_name || '').toLowerCase().includes(q) ||
+        (item.second_name || '').toLowerCase().includes(q)
+      )
     })
+
+    function handleToggleAds(user, allowed) {
+      const setFlag = (value) =>
+        setData(list => list.map(u => (u._id === user._id ? { ...u, canPostAds: value } : u)))
+
+      setAdsBusy(b => ({ ...b, [user._id]: true }))
+      setFlag(allowed) // optimistic
+
+      fetch(`${process.env.REACT_APP_API_URL}/set_ads_permission/${user._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ canPostAds: allowed })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('failed')
+        toast(
+          allowed
+            ? `${user.first_name} can now post ads`
+            : `${user.first_name} can no longer post ads`,
+          { type: 'success' }
+        )
+      })
+      .catch(() => {
+        setFlag(!allowed) // roll back
+        toast('Failed to update permission', { type: 'error' })
+      })
+      .finally(() => setAdsBusy(b => ({ ...b, [user._id]: false })))
+    }
 
   return (
     <>
@@ -298,19 +323,26 @@ function ManageRegularUsers() {
         </ModalFooter>
       </Modal>
 
-        <div className='mt-2 mb-2 dark:text-gray-500 text-sm'>Total Users: {data.length}</div>
-        <div className="flex mr-5 mb-5 justify-end">
-              <input type="text" 
-                  placeholder='Search ...' 
-                  className='p-2 text-xs rounded-lg bg-transparent border border-gray-300 dark:border-gray-500 text-black dark:text-gray-500' 
-                  onChange={(e)=> e.target.value === "" ? setSearch(null) : setSearch(e.target.value)}
-              />
-            </div>
+        <div className='mt-2 mb-2 dark:text-gray-500 text-sm'>
+          Total Users: {data.length} · Can post ads: {data.filter(u => u.canPostAds).length}
+        </div>
+        <div className="flex mr-5 mb-5 justify-between items-center">
+          <label className="flex items-center gap-2 text-xs dark:text-gray-500 cursor-pointer">
+            <input type="checkbox" checked={adsOnly} onChange={e => setAdsOnly(e.target.checked)} />
+            Show only users who can post ads
+          </label>
+          <input type="text"
+            placeholder='Search ...'
+            className='p-2 text-xs rounded-lg bg-transparent border border-gray-300 dark:border-gray-500 text-black dark:text-gray-500'
+            onChange={(e)=> e.target.value === "" ? setSearch(null) : setSearch(e.target.value)}
+          />
+        </div>
       <TableContainer className="mb-8">
         <Table>
           <TableHeader>
             <tr>
               <TableCell>User Info</TableCell>
+              <TableCell>Can Post Ads</TableCell>
               <TableCell>Change Password?</TableCell>
               <TableCell>Actions</TableCell>
             </tr>
@@ -333,6 +365,46 @@ function ManageRegularUsers() {
                       <p className="font-semibold">{user.first_name} {user.second_name}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
                     </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={Boolean(user.canPostAds)}
+                    disabled={Boolean(adsBusy[user._id])}
+                    onClick={() => handleToggleAds(user, !user.canPostAds)}
+                    style={{
+                      position: 'relative',
+                      display: 'block',
+                      flexShrink: 0,
+                      width: 44,
+                      height: 24,
+                      borderRadius: 12,
+                      border: 'none',
+                      padding: 0,
+                      cursor: adsBusy[user._id] ? 'default' : 'pointer',
+                      opacity: adsBusy[user._id] ? 0.5 : 1,
+                      backgroundColor: user.canPostAds ? '#7C3AED' : '#6B7280',
+                      transition: 'background-color 150ms',
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 2,
+                        left: user.canPostAds ? 22 : 2,
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        backgroundColor: '#fff',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                        transition: 'left 150ms',
+                      }}
+                    />
+                  </button>
+                  <div className="text-xs mt-1 text-gray-500 dark:text-gray-400">
+                    {user.canPostAds ? 'Allowed' : 'Not allowed'}
                   </div>
                 </TableCell>
                 <TableCell>
